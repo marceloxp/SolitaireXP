@@ -215,6 +215,21 @@ Depois: **Continuar** → **Completar automaticamente**.
 - **Modal com glassmorphism**: `.confirm-box` usa fundo semi-transparente
   (`rgba` da cor `--felt-dark`) + `backdrop-filter: blur(10px)` (com prefixo
   `-webkit-` pra Safari/iOS) em vez de fundo opaco.
+- **`zIndexBoost: false` no Draggable (`js/drag-handler.js`)**: o default do
+  GSAP (`true`) sobe o z-index do elemento pressionado acima de todos os
+  irmãos assim que o `onPress` dispara — mesmo num clique sem arrasto real.
+  Como o z-index de cada carta já é controlado manualmente (`10 +
+  cardIndex` em `render.js`, e reaplicado em `restoreGroup`), esse boost só
+  causava problema: uma carta do meio da coluna "pulava" pra frente das
+  cartas seguintes num simples clique, e num arraste de grupo colocava a
+  carta "pega" acima das outras do próprio grupo. Ficou desligado de
+  propósito — não reativar sem entender esse efeito colateral.
+- **Offset em cascata no arraste de grupo**: `moveGroupToDragLayer` já
+  aplica `idx * TABLEAU_OFFSET` como `top` estático de cada carta do grupo
+  ao movê-las pro `#drag-layer`; o `onDrag` só deve somar o delta bruto do
+  arraste (`this.x`/`this.y`) por cima disso. Somar o offset de novo no
+  `onDrag` (como acontecia antes) fazia as cartas do grupo se afastarem
+  verticalmente conforme o arraste avançava.
 - **Cache do navegador ao testar com `playwright-cli`**: editar `css/style.css`
   ou `js/*.js` enquanto uma sessão do `playwright-cli` já está aberta pode não
   refletir no browser — `reload`/`goto` fazem soft-reload e o Chromium às
