@@ -24,7 +24,14 @@ export function attachDragHandlers({
     const draggable = Draggable.create(el, {
       type: 'x,y',
       inertia: false,
-      zIndexBoost: true,
+      // O default do GSAP (true) sobe o z-index do elemento pressionado pra
+      // cima de todos os irmãos assim que o "press" acontece — mesmo sem
+      // arrasto real. Isso fazia uma carta no meio da pilha "pular" pra
+      // frente das cartas seguintes num simples clique, e num arraste de
+      // grupo colocava a carta "pega" acima das outras do próprio grupo,
+      // bagunçando a ordem visual. O z-index de cada carta já é controlado
+      // manualmente (`render.js`/`restoreGroup`), então desligamos o boost.
+      zIndexBoost: false,
       onPress() {
         dragged = false;
         groupEls.forEach((node) => {
@@ -39,13 +46,15 @@ export function attachDragHandlers({
         moveGroupToDragLayer(groupEls);
       },
       onDrag() {
+        // O offset em cascata (idx * TABLEAU_OFFSET) já foi aplicado como
+        // "top" estático em moveGroupToDragLayer; aqui só replicamos o delta
+        // bruto do arraste (dx/dy) pra mover o grupo em bloco. Somar o
+        // offset de novo aqui fazia as cartas se afastarem verticalmente a
+        // cada pixel arrastado.
         const dx = this.x;
         const dy = this.y;
-        groupEls.slice(1).forEach((node, idx) => {
-          gsap.set(node, {
-            x: dx,
-            y: dy + (idx + 1) * TABLEAU_OFFSET,
-          });
+        groupEls.slice(1).forEach((node) => {
+          gsap.set(node, { x: dx, y: dy });
         });
       },
       onClick() {
