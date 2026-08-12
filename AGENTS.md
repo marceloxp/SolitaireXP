@@ -221,6 +221,20 @@ Depois: **Continuar** → **Finalizar**.
   mantém a semântica de heading pra acessibilidade mas mostra a arte da
   logo (cartas + nome já desenhado na imagem). Não duplicar o nome como
   texto ao lado, a imagem já tem.
+- **Tela "Sobre"** (`#about-overlay`, botão `#btn-about` no menu, lógica em
+  `bindAbout()` no `js/main.js`): overlay estático já presente no
+  `index.html` (não montado dinamicamente como o `confirmAction`), alternado
+  via `hidden`/`overlay.hidden = false`. **De novo a pegadinha do
+  `[hidden]`**: `.about-overlay` tem `display: grid` fixo no CSS, então
+  precisa do `.about-overlay[hidden] { display: none; }` explícito (mesmo
+  caso do `.toolbar button[hidden]` documentado acima) — sem isso o overlay
+  aparece aberto desde o carregamento da página. Conteúdo: dedicatória
+  ("Feito pelo MarceloXP ❤️ para Silvana" — texto literal, não mudar),
+  crédito ao pacote de cartas ("Casino Card Pack", por Moxica/playground —
+  a licença em `.resources/Casino/LICENSE`, gitignored, é um EULA
+  proprietário que **não exige** atribuição pública, mas o usuário pediu
+  pra creditar mesmo assim) e crédito ao par de desenvolvimento (Claude
+  Sonnet 5 + Cursor). Link pro GitHub do repo.
 - **Textura de feltro**: o fundo (`body` em `css/style.css`) tem duas camadas
   de `repeating-linear-gradient` diagonais (45°/-45°, opacidade ~3.5%) por
   cima do `radial-gradient` original, simulando a trama de um feltro de mesa.

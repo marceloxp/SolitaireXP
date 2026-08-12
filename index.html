@@ -30,6 +30,10 @@
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             <span>Continuar</span>
           </button>
+          <button id="btn-about" type="button" class="btn-about">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>Sobre</span>
+          </button>
         </div>
       </div>
     </section>
@@ -74,6 +78,34 @@
   <div id="rotate-overlay" class="rotate-overlay">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M12 18h.01"></path><path d="M4 8v-.5A2.5 2.5 0 0 1 6.5 5H8"></path><path d="M2 6l3 3-3 3"></path></svg>
     <p>Gire seu aparelho de volta pro modo retrato pra continuar jogando.</p>
+  </div>
+
+  <div id="about-overlay" class="about-overlay" hidden>
+    <div class="about-box">
+      <button type="button" id="btn-about-close" class="about-close" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <img src="assets/icons/icon-192.png" alt="" class="about-logo">
+
+      <p class="about-dedication">Feito pelo <strong>MarceloXP</strong> <span class="about-heart" aria-hidden="true">❤️</span> para <strong>Silvana</strong></p>
+
+      <ul class="about-credits">
+        <li>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          <span>Cartas: <em>Casino Card Pack</em>, por Moxica (playground)</span>
+        </li>
+        <li>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          <span>Código: escrito em parceria com Claude Sonnet 5, rodando no <em>Cursor</em></span>
+        </li>
+      </ul>
+
+      <a class="about-link" href="https://github.com/marceloxp/SolitaireXP" target="_blank" rel="noopener noreferrer">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        <span>Ver código no GitHub</span>
+      </a>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>

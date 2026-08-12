@@ -85,6 +85,24 @@ function bindMenu() {
   });
   document.querySelector('#btn-auto-complete').addEventListener('click', () => runAutoComplete());
   document.querySelector('#btn-undo').addEventListener('click', () => handleUndo());
+  bindAbout();
+}
+
+function bindAbout() {
+  const overlay = document.querySelector('#about-overlay');
+  const open = () => {
+    overlay.hidden = false;
+  };
+  const close = () => {
+    overlay.hidden = true;
+  };
+  document.querySelector('#btn-about').addEventListener('click', open);
+  document.querySelector('#btn-about-close').addEventListener('click', close);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      close();
+    }
+  });
 }
 
 function confirmAction(message, onConfirm) {

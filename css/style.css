@@ -397,6 +397,153 @@ body[data-screen="game"] .screen-game {
   border: 1px solid rgba(245, 245, 220, 0.4);
 }
 
+.menu-actions button.btn-about {
+  /* Ação secundária: sem o fundo sólido dos botões principais, só um link
+     discreto abaixo de "Novo jogo"/"Continuar". Seletor mais específico que
+     ".menu-actions button" pra não precisar de !important. */
+  background: transparent;
+  color: var(--text);
+  font-weight: 500;
+  padding: 6px 12px;
+  opacity: 0.8;
+}
+
+.btn-about:hover,
+.btn-about:focus-visible {
+  opacity: 1;
+}
+
+.about-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 3500;
+  padding: 16px;
+}
+
+.about-overlay[hidden] {
+  /* Sem isso, o "display: grid" acima (regra de autor) sobrescreve o
+     display:none que o atributo [hidden] aplicaria via UA stylesheet —
+     mesma pegadinha do `.toolbar button[hidden]` (ver AGENTS.md). */
+  display: none;
+}
+
+.about-box {
+  position: relative;
+  background: rgba(10, 79, 42, 0.55);
+  border: 1px solid rgba(245, 245, 220, 0.25);
+  border-radius: 16px;
+  padding: 32px 28px 28px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.about-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  opacity: 0.7;
+  padding: 6px;
+  line-height: 0;
+}
+
+.about-close:hover,
+.about-close:focus-visible {
+  opacity: 1;
+}
+
+.about-close .icon,
+.about-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.about-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.about-dedication {
+  margin: 0 0 20px;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.about-heart {
+  display: inline-block;
+  animation: about-heartbeat 1.4s ease-in-out infinite;
+}
+
+@keyframes about-heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.25);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.about-credits {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 16px 0 0;
+  border-top: 1px solid rgba(245, 245, 220, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.about-credits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.about-credits .icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  opacity: 0.8;
+}
+
+.about-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 10px 18px;
+  background: #f0e6c8;
+  color: #1f1f1f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.about-link .icon {
+  width: 16px;
+  height: 16px;
+}
+
 @media (min-width: 760px) {
   #hud .stat {
     font-size: 1rem;
