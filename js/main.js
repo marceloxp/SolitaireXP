@@ -98,6 +98,7 @@ function bindAbout() {
   };
   document.querySelector('#btn-about').addEventListener('click', open);
   document.querySelector('#btn-about-close').addEventListener('click', close);
+  document.querySelector('#btn-about-footer-close').addEventListener('click', close);
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) {
       close();
@@ -114,11 +115,11 @@ function confirmAction(message, onConfirm) {
       <div class="confirm-actions">
         <button type="button" class="confirm-cancel">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          <span>Cancelar</span>
+          <span>Não</span>
         </button>
         <button type="button" class="confirm-ok">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>Confirmar</span>
+          <span>Sim</span>
         </button>
       </div>
     </div>

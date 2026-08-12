@@ -234,7 +234,20 @@ Depois: **Continuar** → **Finalizar**.
   a licença em `.resources/Casino/LICENSE`, gitignored, é um EULA
   proprietário que **não exige** atribuição pública, mas o usuário pediu
   pra creditar mesmo assim) e crédito ao par de desenvolvimento (Claude
-  Sonnet 5 + Cursor). Link pro GitHub do repo.
+  Sonnet 5 + Cursor). O link pro GitHub é mais um item da lista de créditos
+  (link de texto sublinhado + ícone, igual "Cartas"/"Código"), não um botão
+  separado — e tem um botão "Fechar" full-width no rodapé além do ícone de
+  X no canto (`#btn-about-footer-close`, mesmo handler `close()` do X).
+- **Versão do app**: `.app-version` no `index.html` (dentro de
+  `.screen-menu`, `position: fixed` no canto inferior direito — some
+  sozinho quando `data-screen="game"` porque `.screen-menu` vira
+  `display:none`). É só texto estático (`v1.0.0`), sem `package.json` nem
+  build step no projeto pra puxar a versão de outro lugar. **Bump manual**
+  a cada leva de mudanças relevante — não existe automação pra isso.
+- **Diálogo de confirmação**: os botões são "Não"/"Sim" (não
+  "Cancelar"/"Confirmar") — textos mais longos com os ícones deixavam os
+  botões desproporcionais/desalinhados das bordas do `.confirm-box` em
+  telas estreitas.
 - **Textura de feltro**: o fundo (`body` em `css/style.css`) tem duas camadas
   de `repeating-linear-gradient` diagonais (45°/-45°, opacidade ~3.5%) por
   cima do `radial-gradient` original, simulando a trama de um feltro de mesa.

@@ -96,6 +96,16 @@ body[data-screen="game"] .screen-game {
   font-size: clamp(1.8rem, 5vw, 2.4rem);
 }
 
+.app-version {
+  position: fixed;
+  right: calc(10px + var(--safe-right));
+  bottom: calc(10px + var(--safe-bottom));
+  margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .menu-logo {
   display: block;
   width: clamp(120px, 40vw, 180px);
@@ -526,22 +536,28 @@ body[data-screen="game"] .screen-game {
 }
 
 .about-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  /* Link de texto simples, mesma linha dos outros itens da lista de
+     créditos (ícone já fica fora, no <li>, igual "Cartas"/"Código"). */
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.about-link:hover,
+.about-link:focus-visible {
+  color: #f0e6c8;
+}
+
+.about-footer-close {
+  display: block;
+  width: 100%;
+  border: 0;
   border-radius: 10px;
   padding: 10px 18px;
   background: #f0e6c8;
   color: #1f1f1f;
   font-weight: 600;
   font-size: 0.9rem;
-  text-decoration: none;
-}
-
-.about-link .icon {
-  width: 16px;
-  height: 16px;
 }
 
 @media (min-width: 760px) {
