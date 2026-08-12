@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solitairexp-v5';
+const CACHE_NAME = 'solitairexp-v6';
 
 const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANK_LABELS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
