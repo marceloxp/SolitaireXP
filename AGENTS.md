@@ -68,6 +68,14 @@ futuras.
   tampar o tabuleiro.
 - Botões têm `touch-action: manipulation` pra evitar o gesto de
   double-tap-zoom do Chrome mobile (ex: duplo toque no monte/stock pile).
+- `.card` (`css/cards.css`) **não** tem `border-radius`: os sprites em
+  `assets/cards/` já vêm com cantos arredondados desenhados (alfa
+  transparente nos cantos). Um `border-radius` fixo em CSS por cima cortava
+  o desenho (naipe/valor perto da borda) de forma inconsistente em telas
+  pequenas, onde o raio fixo é proporcionalmente grande. A sombra do card
+  usa `filter: drop-shadow(...)` (acompanha o alfa da imagem) em vez de
+  `box-shadow` (que sempre segue o retângulo da caixa, ignorando a
+  transparência).
 
 ## Persistência (`localStorage`)
 
@@ -172,6 +180,22 @@ Depois: **Continuar** → **Completar automaticamente**.
   estado).
 - **Vitória**: cascata de cartas via GSAP + overlay "Você venceu!" com botão
   "Jogar novamente" (reinicia o jogo e limpa animação/overlay residuais).
+- **Desfazer**: até 3 jogadas pra trás (`MAX_UNDO` em `js/main.js`). Cada
+  handler de jogada (compra do monte, drag manual, clique único, e o
+  auto-complete inteiro como UM passo atômico) tira um snapshot
+  (`snapshotState()`, clone via `serializeState`) do `gameState`+`scoreState`
+  *antes* de mutar e só empilha (`pushHistory`) se a jogada realmente
+  aconteceu. Histórico é zerado em `startNewGame()` e ao carregar via
+  "Continuar" (não persiste entre reloads). Botão `#btn-undo` fica oculto
+  quando a pilha está vazia ou o jogo já foi ganho.
+- **Confirmação no "Novo jogo"**: o botão da barra inferior (dentro da
+  partida) abre um overlay de confirmação (`confirmAction()` em
+  `js/main.js`, `.confirm-overlay`/`.confirm-box` no CSS) antes de descartar
+  o jogo atual. O "Novo jogo" do menu inicial não tem essa confirmação (não
+  há progresso visível pra perder naquele ponto).
+- **Barra inferior**: "Novo jogo" fica ancorado à esquerda, "Desfazer" à
+  direita (`justify-content: space-between` em `.toolbar`); "Completar
+  automaticamente" aparece entre os dois quando habilitado.
 
 ## Pendências conhecidas (não implementadas)
 

@@ -113,7 +113,8 @@ body[data-screen="game"] .screen-game {
   z-index: 500;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding:
     10px
@@ -237,6 +238,55 @@ body[data-screen="game"] .screen-game {
   color: #1f1f1f;
   font-weight: 600;
   font-size: 1rem;
+}
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 3000;
+  padding: 16px;
+}
+
+.confirm-box {
+  background: var(--felt-dark);
+  border: 1px solid rgba(245, 245, 220, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.confirm-box p {
+  margin: 0 0 20px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.confirm-actions button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.confirm-ok {
+  background: #f0e6c8;
+  color: #1f1f1f;
+}
+
+.confirm-cancel {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(245, 245, 220, 0.4);
 }
 
 @media (min-width: 760px) {

@@ -9,6 +9,7 @@ import {
   getAutoCompleteMoves,
   isGameWon,
   locateCard,
+  serializeState,
 } from './game-state.js';
 import { attachDragHandlers } from './drag-handler.js';
 import {
@@ -30,11 +31,14 @@ const hud = document.querySelector('#hud');
 const gameRoot = document.querySelector('#game-root');
 const dragLayer = document.querySelector('#drag-layer');
 
+const MAX_UNDO = 3;
+
 let gameState = dealNewGame();
 let scoreState = createScoreState();
 let detachDrag = null;
 let timerId = null;
 let won = false;
+let history = [];
 
 function boot() {
   bindMenu();
@@ -60,13 +64,43 @@ function bindMenu() {
     if (saved?.gameState) {
       gameState = saved.gameState;
       scoreState = { ...createScoreState(), ...saved.scoreState };
+      history = [];
       showScreen('game');
       refresh();
       startTimer();
     }
   });
-  document.querySelector('#btn-new-from-game').addEventListener('click', () => startNewGame());
+  document.querySelector('#btn-new-from-game').addEventListener('click', () => {
+    confirmAction('Começar um novo jogo? O progresso atual será perdido.', () => startNewGame());
+  });
   document.querySelector('#btn-auto-complete').addEventListener('click', () => runAutoComplete());
+  document.querySelector('#btn-undo').addEventListener('click', () => handleUndo());
+}
+
+function confirmAction(message, onConfirm) {
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-box">
+      <p>${message}</p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel">Cancelar</button>
+        <button type="button" class="confirm-ok">Confirmar</button>
+      </div>
+    </div>
+  `;
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      close();
+    }
+  });
+  overlay.querySelector('.confirm-cancel').addEventListener('click', close);
+  overlay.querySelector('.confirm-ok').addEventListener('click', () => {
+    close();
+    onConfirm();
+  });
+  app.appendChild(overlay);
 }
 
 function showScreen(name) {
@@ -79,6 +113,7 @@ function startNewGame() {
   won = false;
   gameState = dealNewGame();
   scoreState = createScoreState();
+  history = [];
   clearSavedGame();
   showScreen('game');
   refresh();
@@ -116,6 +151,7 @@ function refresh() {
   });
   updateHud(hud, scoreState, gameState);
   updateAutoCompleteButton();
+  updateUndoButton();
   saveGame(gameState, scoreState);
 
   detachDrag = attachDragHandlers({
@@ -127,11 +163,44 @@ function refresh() {
   });
 }
 
+function snapshotState() {
+  return {
+    gameState: JSON.parse(serializeState(gameState)),
+    scoreState: { ...scoreState },
+  };
+}
+
+function pushHistory(snapshot) {
+  history.push(snapshot);
+  if (history.length > MAX_UNDO) {
+    history.shift();
+  }
+}
+
+function updateUndoButton() {
+  const btn = document.querySelector('#btn-undo');
+  btn.hidden = won || !history.length;
+}
+
+function handleUndo() {
+  if (won || !history.length) {
+    return;
+  }
+  const snapshot = history.pop();
+  gameState = snapshot.gameState;
+  scoreState = snapshot.scoreState;
+  refresh();
+}
+
 function handleStockClick() {
   if (won) {
     return;
   }
-  drawFromStock(gameState);
+  const snapshot = snapshotState();
+  const result = drawFromStock(gameState);
+  if (result.action !== 'none') {
+    pushHistory(snapshot);
+  }
   refresh();
 }
 
@@ -140,10 +209,13 @@ function handleDropAttempt({ cardId, source, target }) {
     return false;
   }
 
+  const snapshot = snapshotState();
+
   let result;
   if (target.pile === PILE.TABLEAU) {
     result = applyMoveToTableau(gameState, source, target.index);
     if (result.ok) {
+      pushHistory(snapshot);
       registerMove(scoreState, scoreTypeToTableau(source.pile));
       if (result.flipped) {
         registerMove(scoreState, 'reveal-tableau');
@@ -157,6 +229,7 @@ function handleDropAttempt({ cardId, source, target }) {
   if (target.pile === PILE.FOUNDATION) {
     result = applyMoveToFoundation(gameState, source, target.index);
     if (result.ok) {
+      pushHistory(snapshot);
       registerMove(scoreState, scoreTypeToFoundation(source.pile));
       if (result.flipped) {
         registerMove(scoreState, 'reveal-tableau');
@@ -193,9 +266,11 @@ function handleCardClick(cardId) {
   }
   const source = locateCard(gameState, cardId);
   const fromPile = source?.pile;
+  const snapshot = snapshotState();
 
   const foundationResult = autoMoveToFoundation(gameState, cardId);
   if (foundationResult.ok) {
+    pushHistory(snapshot);
     registerMove(scoreState, scoreTypeToFoundation(fromPile));
     if (foundationResult.flipped) {
       registerMove(scoreState, 'reveal-tableau');
@@ -212,6 +287,7 @@ function handleCardClick(cardId) {
   for (let i = 0; i < gameState.tableau.length; i += 1) {
     const tableauResult = applyMoveToTableau(gameState, source, i);
     if (tableauResult.ok) {
+      pushHistory(snapshot);
       registerMove(scoreState, scoreTypeToTableau(fromPile));
       if (tableauResult.flipped) {
         registerMove(scoreState, 'reveal-tableau');
@@ -234,11 +310,17 @@ function runAutoComplete() {
   }
 
   const moves = getAutoCompleteMoves(gameState);
+  if (!moves.length) {
+    return;
+  }
+
+  const snapshot = snapshotState();
   moves.forEach((move) => {
     const source = locateCard(gameState, move.cardId);
     applyMoveToFoundation(gameState, source, move.foundationIndex);
     registerMove(scoreState, 'tableau-to-foundation');
   });
+  pushHistory(snapshot);
   refresh();
   checkWin();
 }
