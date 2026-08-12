@@ -193,14 +193,33 @@ function handleCardClick(cardId) {
   }
   const source = locateCard(gameState, cardId);
   const fromPile = source?.pile;
-  const result = autoMoveToFoundation(gameState, cardId);
-  if (result.ok) {
+
+  const foundationResult = autoMoveToFoundation(gameState, cardId);
+  if (foundationResult.ok) {
     registerMove(scoreState, scoreTypeToFoundation(fromPile));
-    if (result.flipped) {
+    if (foundationResult.flipped) {
       registerMove(scoreState, 'reveal-tableau');
     }
     refresh();
     checkWin();
+    return;
+  }
+
+  if (!source || fromPile === PILE.FOUNDATION) {
+    return;
+  }
+
+  for (let i = 0; i < gameState.tableau.length; i += 1) {
+    const tableauResult = applyMoveToTableau(gameState, source, i);
+    if (tableauResult.ok) {
+      registerMove(scoreState, scoreTypeToTableau(fromPile));
+      if (tableauResult.flipped) {
+        registerMove(scoreState, 'reveal-tableau');
+      }
+      refresh();
+      checkWin();
+      return;
+    }
   }
 }
 
