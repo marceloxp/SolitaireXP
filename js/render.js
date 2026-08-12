@@ -109,11 +109,17 @@ function createTableauColumn(cards, columnIndex) {
     }));
   });
 
-  // Os cards são posicionados com position:absolute, então o container não
-  // cresce sozinho com a pilha; sem isso, pilhas longas ficam maiores que a
-  // altura mínima fixa e passam por cima do que vem depois do tabuleiro.
-  const stackedHeight = Math.max(0, cards.length - 1) * TABLEAU_OFFSET;
-  column.style.minHeight = `calc(var(--card-height) + ${stackedHeight + 110}px)`;
+  if (cards.length === 0) {
+    // Coluna vazia: só marca o espaço de uma carta (igual às fundações), em
+    // vez do "buffer" extra usado pra pilhas com cartas.
+    column.style.minHeight = 'var(--card-height)';
+  } else {
+    // Os cards são posicionados com position:absolute, então o container não
+    // cresce sozinho com a pilha; sem isso, pilhas longas ficam maiores que a
+    // altura mínima fixa e passam por cima do que vem depois do tabuleiro.
+    const stackedHeight = Math.max(0, cards.length - 1) * TABLEAU_OFFSET;
+    column.style.minHeight = `calc(var(--card-height) + ${stackedHeight + 110}px)`;
+  }
 
   return column;
 }

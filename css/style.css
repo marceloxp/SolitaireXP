@@ -235,7 +235,10 @@ body[data-screen="game"] .screen-game {
 }
 
 .pile-tableau {
-  min-height: calc(var(--card-height) + 110px);
+  /* Fallback antes do JS calcular a altura real via inline style
+     (`createTableauColumn`); colunas vazias ficam do tamanho de uma carta só,
+     igual às fundações. */
+  min-height: var(--card-height);
   width: 100%;
 }
 
