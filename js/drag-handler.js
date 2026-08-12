@@ -4,7 +4,7 @@ import { TABLEAU_OFFSET } from './render.js';
 export function attachDragHandlers({
   gameState,
   onDropAttempt,
-  onDoubleTap,
+  onCardClick,
   getDropTargets,
   getCardElements,
 }) {
@@ -48,6 +48,9 @@ export function attachDragHandlers({
           });
         });
       },
+      onClick() {
+        onCardClick?.(cardId);
+      },
       onRelease() {
         if (!dragged) {
           startPositions.clear();
@@ -72,16 +75,6 @@ export function attachDragHandlers({
         dragged = false;
       },
     })[0];
-
-    let lastTap = 0;
-    el.addEventListener('click', (event) => {
-      const now = Date.now();
-      if (now - lastTap < 350) {
-        event.preventDefault();
-        onDoubleTap?.(cardId);
-      }
-      lastTap = now;
-    });
 
     draggables.push(draggable);
   });

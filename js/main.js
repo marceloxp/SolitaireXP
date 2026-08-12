@@ -123,7 +123,7 @@ function refresh() {
     getDropTargets,
     getCardElements,
     onDropAttempt: handleDropAttempt,
-    onDoubleTap: handleDoubleTap,
+    onCardClick: handleCardClick,
   });
 }
 
@@ -187,7 +187,7 @@ function scoreTypeToFoundation(fromPile) {
   return 'tableau-to-foundation';
 }
 
-function handleDoubleTap(cardId) {
+function handleCardClick(cardId) {
   if (won) {
     return;
   }

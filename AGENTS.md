@@ -151,8 +151,11 @@ Depois: **Continuar** → **Completar automaticamente**.
   coluna vazia; só é possível mover um grupo se já formar sequência válida.
 - **Fundação**: sobe por naipe a partir do Ás; só aceita a próxima carta em
   sequência.
-- **Duplo clique/toque**: manda a carta pra fundação correta automaticamente,
-  se houver movimento válido.
+- **Clique único**: se a carta do topo do waste ou do tableau "serve" numa
+  fundação (próxima carta válida da sequência), o clique já manda ela pra lá
+  automaticamente — não precisa de duplo clique. Implementado via callback
+  `onClick` do GSAP Draggable (`js/drag-handler.js`), que só dispara quando
+  não houve arrasto de verdade, então não conflita com o drag manual.
 - **Pontuação** (fórmula clássica Win 3.1): Waste→Tableau +5,
   Waste→Fundação +10, Tableau→Fundação +10, Fundação→Tableau −15, revelar
   carta do tableau +5, decaimento −2 a cada 10s sem jogada, sem penalidade ao
