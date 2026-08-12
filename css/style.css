@@ -96,6 +96,14 @@ body[data-screen="game"] .screen-game {
   font-size: clamp(1.8rem, 5vw, 2.4rem);
 }
 
+.menu-logo {
+  display: block;
+  width: clamp(120px, 40vw, 180px);
+  height: auto;
+  margin: 0 auto;
+  border-radius: 16px;
+}
+
 .menu-card p {
   margin: 0 0 24px;
   opacity: 0.85;
@@ -116,9 +124,13 @@ body[data-screen="game"] .screen-game {
   font-weight: 600;
 }
 
-.toolbar button {
+.menu-actions button,
+.toolbar button,
+.confirm-actions button,
+.win-overlay-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -126,7 +138,10 @@ body[data-screen="game"] .screen-game {
   display: none;
 }
 
-.toolbar button .icon {
+.menu-actions button .icon,
+.toolbar button .icon,
+.confirm-actions button .icon,
+.win-overlay-btn .icon {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
