@@ -30,17 +30,35 @@
 
     <section class="screen-game">
       <div id="hud">
-        <div class="stat"><span>Pontos</span><strong data-score>0</strong></div>
-        <div class="stat"><span>Jogadas</span><strong data-moves>0</strong></div>
-        <div class="stat"><span>Tempo</span><strong data-time>00:00</strong></div>
+        <div class="stat">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span>Pontos</span><strong data-score>0</strong>
+        </div>
+        <div class="stat">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          <span>Jogadas</span><strong data-moves>0</strong>
+        </div>
+        <div class="stat">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Tempo</span><strong data-time>00:00</strong>
+        </div>
       </div>
 
       <div id="game-root"></div>
 
       <div class="toolbar">
-        <button id="btn-new-from-game" type="button">Novo jogo</button>
-        <button id="btn-auto-complete" type="button" hidden>Completar automaticamente</button>
-        <button id="btn-undo" type="button" hidden>Desfazer</button>
+        <button id="btn-new-from-game" type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          <span>Novo jogo</span>
+        </button>
+        <button id="btn-auto-complete" type="button" hidden>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+          <span>Completar automaticamente</span>
+        </button>
+        <button id="btn-undo" type="button" hidden>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>
+          <span>Desfazer</span>
+        </button>
       </div>
     </section>
   </div>

@@ -196,6 +196,31 @@ Depois: **Continuar** → **Completar automaticamente**.
 - **Barra inferior**: "Novo jogo" fica ancorado à esquerda, "Desfazer" à
   direita (`justify-content: space-between` em `.toolbar`); "Completar
   automaticamente" aparece entre os dois quando habilitado.
+- **Ícones**: todos os ícones da UI (estatísticas do HUD e botões da barra
+  inferior) são SVGs inline no `index.html` (estilo Feather Icons, MIT,
+  `stroke="currentColor"`), não Font Awesome nem outra CDN — mantém o PWA
+  100% offline sem requests externos. Classe `.icon` controla o tamanho
+  (`1em` no HUD pra acompanhar o `font-size`, `18px` fixo nos botões da
+  toolbar). Cuidado ao adicionar `display` num seletor que também bate em
+  elementos com `[hidden]` (ex.: `.toolbar button`): o `[hidden]` do HTML só
+  vira `display: none` via UA stylesheet (baixa prioridade), então uma regra
+  de autor com `display: flex/inline-flex` no mesmo elemento *sobrescreve* o
+  hidden nativo. Por isso existe `.toolbar button[hidden] { display: none; }`
+  explícito no CSS — sem essa regra os botões `#btn-undo`/`#btn-auto-complete`
+  aparecem mesmo com o atributo `hidden` presente no DOM.
+- **Textura de feltro**: o fundo (`body` em `css/style.css`) tem duas camadas
+  de `repeating-linear-gradient` diagonais (45°/-45°, opacidade ~3.5%) por
+  cima do `radial-gradient` original, simulando a trama de um feltro de mesa.
+  Puro CSS, sem imagem extra.
+- **Modal com glassmorphism**: `.confirm-box` usa fundo semi-transparente
+  (`rgba` da cor `--felt-dark`) + `backdrop-filter: blur(10px)` (com prefixo
+  `-webkit-` pra Safari/iOS) em vez de fundo opaco.
+- **Cache do navegador ao testar com `playwright-cli`**: editar `css/style.css`
+  ou `js/*.js` enquanto uma sessão do `playwright-cli` já está aberta pode não
+  refletir no browser — `reload`/`goto` fazem soft-reload e o Chromium às
+  vezes reaproveita o CSS antigo do cache HTTP. Se uma mudança de CSS parecer
+  "não aplicada" durante testes, rode `playwright-cli close` e `open` de novo
+  (sessão nova = cache novo) antes de desconfiar da regra em si.
 
 ## Pendências conhecidas (não implementadas)
 
