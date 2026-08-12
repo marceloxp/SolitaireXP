@@ -348,6 +348,27 @@ Depois: **Continuar** → **Finalizar**.
   por `100dvh` (com fallback pro `100%`, que browsers sem suporte a `dvh`
   simplesmente ignoram) — mais robusto que `100%` porque considera a altura
   dinâmica da UI do navegador/gestos no mobile.
+- **Botão "Instalar app"** (`#btn-install` em `.menu-actions`, lógica em
+  `js/pwa-install.js`, chamada via `initPwaInstall()` no `boot()` do
+  `js/main.js`): escuta `beforeinstallprompt` (só dispara em browsers
+  Chromium — Chrome/Edge/Opera — quando os critérios de instalabilidade do
+  PWA são atendidos; Safari/iOS e Firefox nunca disparam, então o botão
+  simplesmente não aparece nesses navegadores, sem tratamento especial
+  necessário), guarda o evento, tira o `hidden` do botão; no clique chama
+  `.prompt()` (só pode ser chamado uma vez por evento) e aguarda
+  `.userChoice`; escuta `appinstalled` pra esconder o botão se o usuário
+  instalar por outro caminho (ex.: menu nativo do navegador); e checa
+  `matchMedia('(display-mode: standalone)')`/`navigator.standalone` (Safari)
+  no boot pra nem registrar os listeners se o app já estiver instalado.
+  **Achado um bug preexistente nesse processo**: `.menu-actions button`
+  tinha `display: inline-flex` mas faltava `.menu-actions button[hidden] {
+  display: none }` — mesma pegadinha do `[hidden]` documentada acima pro
+  `.toolbar`/`.about-overlay`, só que ninguém tinha notado ainda porque o
+  efeito (botão "Continuar" aparecendo mesmo sem jogo salvo) é sutil. Corrigido
+  junto (regra unificada `.menu-actions button[hidden], .toolbar
+  button[hidden] { display: none }`). `js/pwa-install.js` entra no precache
+  do service worker (`ASSETS`) como os outros módulos, pra manter a
+  cobertura 100% offline.
 
 ## Pendências conhecidas (não implementadas)
 

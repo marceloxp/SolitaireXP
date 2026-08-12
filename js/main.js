@@ -25,6 +25,7 @@ import {
   updateHud,
 } from './render.js';
 import { clearWinAnimation, playWinAnimation, showWinOverlay } from './win-animation.js';
+import { initPwaInstall } from './pwa-install.js';
 
 const app = document.querySelector('#app');
 const hud = document.querySelector('#hud');
@@ -44,6 +45,7 @@ function boot() {
   bindMenu();
   removeLegacyBestScore();
   lockOrientation();
+  initPwaInstall();
   const saved = loadGame();
   const continueBtn = document.querySelector('#btn-continue');
   continueBtn.hidden = !(saved?.gameState && !saved.gameState.won);

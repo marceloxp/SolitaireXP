@@ -160,7 +160,15 @@ body[data-screen="game"] .screen-game {
   gap: 8px;
 }
 
+.menu-actions button[hidden],
 .toolbar button[hidden] {
+  /* Mesma pegadinha do [hidden] documentada no AGENTS.md: a regra de
+     display:inline-flex acima bate em qualquer button dentro de
+     .menu-actions/.toolbar (inclusive com o atributo hidden presente) e,
+     sendo do author stylesheet, sempre vence o display:none que o [hidden]
+     aplicaria via UA stylesheet. Sem isso, #btn-continue (quando não há
+     jogo salvo) e #btn-install (antes do beforeinstallprompt) apareciam
+     mesmo estando "hidden". */
   display: none;
 }
 
