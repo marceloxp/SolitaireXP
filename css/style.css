@@ -205,6 +205,10 @@ body[data-screen="game"] .screen-game {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: var(--board-gap);
+  /* Sem isso, o "stretch" padrão do grid faz toda coluna da linha esticar
+     até a altura da coluna com a pilha mais alta (mesmo linha do grid) —
+     uma coluna vazia ficava tão alta quanto a vizinha com várias cartas. */
+  align-items: start;
 }
 
 .pile {
