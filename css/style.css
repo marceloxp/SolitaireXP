@@ -27,6 +27,13 @@
 html,
 body {
   margin: 0;
+  /* "height: 100%" (não só min-height) é o que faz o "100%" do body ter uma
+     base definida pra se apoiar: min-height:100% sozinho no html não conta
+     como "height especificada" pra fins de resolução de porcentagem no
+     filho, então o body ficava só com a altura do próprio conteúdo (menor
+     que a viewport) e sobrava um pedaço da tela sem o fundo do body — só o
+     html por baixo, sem a camada de textura do feltro. */
+  height: 100%;
   min-height: 100%;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text);
