@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solitairexp-v9';
+const CACHE_NAME = 'solitairexp-v10';
 
 const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANK_LABELS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
@@ -10,6 +10,8 @@ const ASSETS = [
   './manifest.json',
   './css/style.css',
   './css/cards.css',
+  './js/vendor/gsap.min.js',
+  './js/vendor/Draggable.min.js',
   './js/card.js',
   './js/deck.js',
   './js/game-state.js',

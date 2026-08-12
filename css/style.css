@@ -207,6 +207,16 @@ body[data-screen="game"] .screen-game {
 .board {
   display: grid;
   gap: 16px;
+  /* Sem isso, em telas largas (desktop) o board esticava até os 980px do
+     #app enquanto --card-width já tinha estourado o clamp e travado no
+     máximo (86px) — as 7 colunas do grid (1fr cada) ficavam bem mais
+     largas que uma carta, e o placeholder tracejado de coluna vazia
+     (`.pile-tableau:empty`, que usa `width: 100%` da coluna) ficava
+     visivelmente mais largo que as cartas ao lado. Limitar o board à
+     largura exata de 7 cartas + 6 gaps garante que o 1fr do grid sempre
+     bata com --card-width. */
+  max-width: calc(7 * var(--card-width) + 6 * var(--board-gap));
+  margin: 0 auto;
 }
 
 .top-row {

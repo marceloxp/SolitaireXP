@@ -1,9 +1,9 @@
 # SolitaireXP — notas para o agente
 
 Clone de Paciência (Klondike, Draw-1) estilo Windows, como PWA em **HTML/CSS/JS
-vanilla + GSAP** (via CDN, sem build step, sem framework, sem backend). Estado
-salvo em `localStorage`. Repo: `github.com/marceloxp/SolitaireXP`, branch
-principal `main`.
+vanilla + GSAP** (vendorizado localmente, sem build step, sem framework, sem
+backend). Estado salvo em `localStorage`. Repo: `github.com/marceloxp/SolitaireXP`,
+branch principal `main`. Hospedado no GitHub Pages.
 
 O `PLAN.md` original (spec inicial do projeto) foi removido depois que o jogo
 ficou completo — este arquivo é o que substitui ele como contexto pra sessões
@@ -288,6 +288,49 @@ Depois: **Continuar** → **Finalizar**.
   landscape) and (hover: none) and (pointer: coarse)` bate — restrito a
   telas de toque sem mouse pra não incomodar quem só deixa a janela do
   desktop larga e baixa.
+- **GSAP/Draggable vendorizados** (`js/vendor/gsap.min.js` e
+  `js/vendor/Draggable.min.js`, v3.12.5, baixados de
+  `cdn.jsdelivr.net/npm/gsap@3.12.5/dist/`): antes eram carregados via CDN no
+  `<script>` do `index.html`. O service worker (`type !== 'basic'` no handler
+  de `fetch`) não cacheava respostas cross-origin, então o jogo instalado como
+  PWA ficava sem drag-and-drop se abrisse offline antes de visitar a CDN pelo
+  menos uma vez. Baixar os arquivos pro repo e apontar o `<script src>` pra
+  `js/vendor/` resolve isso de vez — sem CDN nenhuma, o precache do service
+  worker (`ASSETS` em `service-worker.js`) cobre 100% dos assets. Pra
+  atualizar a versão do GSAP no futuro: baixar os dois arquivos de novo da
+  mesma URL (trocando a versão), sobrescrever em `js/vendor/`, e bumpar
+  `CACHE_NAME`.
+- **Deploy no GitHub Pages**: repo é público, Pages ativado nas settings do
+  GitHub (Deploy from branch → `main` → `/ (root)`, sem custom domain). Não
+  existe build step — o Pages serve os arquivos estáticos do repo direto. O
+  `.nojekyll` na raiz existe só pra desativar o processamento Jekyll padrão
+  do Pages (evita que ele ignore pastas/arquivos que começam com `_` ou
+  outras convenções do Jekyll — não que o projeto tenha nenhuma, mas é boa
+  prática ter o arquivo por segurança/performance de deploy). HTTPS e case
+  sensitivity de paths já são cobertos automaticamente pelo Pages, nenhuma
+  config extra necessária.
+
+- **Board com `max-width` calculado** (`.board` em `css/style.css`): em telas
+  largas (desktop) o board esticava até os 980px do `#app` enquanto
+  `--card-width` já tinha estourado o clamp e travado no máximo (86px) — as 7
+  colunas do grid (`1fr` cada) ficavam bem mais largas que uma carta, e ficava
+  visível sobretudo no placeholder tracejado de coluna vazia do tableau
+  (`.pile-tableau:empty`, que usa `width: 100%` da coluna, não da carta).
+  Fix: `.board` tem `max-width: calc(7 * var(--card-width) + 6 *
+  var(--board-gap))` + `margin: 0 auto`, então o board nunca é mais largo que
+  o necessário pras 7 colunas baterem exatamente com `--card-width`.
+- **Meta tags de compartilhamento social** (Open Graph + Twitter Card, no
+  `<head>` do `index.html`): imagem em `assets/social/banner.jpg` (1200×630,
+  JPEG ~130KB — a fonte original de `.resources/banner.png`, gitignored,
+  virou JPEG porque é uma imagem fotográfica/gradiente, PNG ficava >1MB sem
+  ganho de qualidade perceptível). `og:image`/`twitter:image` usam URL
+  absoluta (`https://marceloxp.github.io/SolitaireXP/...`) porque crawlers de
+  redes sociais não resolvem caminho relativo. **Se o repo for renomeado ou
+  ganhar domínio customizado, atualizar as 4 URLs absolutas** (`og:url`,
+  `og:image`, `twitter:url`, `twitter:image`) — não há automação pra isso.
+  Banner não entra no precache do service worker (`ASSETS`): só é buscado por
+  crawlers externos (Facebook/Twitter/WhatsApp etc.), nunca pelo próprio jogo
+  rodando no navegador do jogador.
 
 ## Pendências conhecidas (não implementadas)
 
