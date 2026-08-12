@@ -12,24 +12,7 @@ export function createScoreState(initialScore = 0) {
     score: initialScore,
     elapsedSeconds: 0,
     idleSeconds: 0,
-    bestScore: loadBestScore(),
   };
-}
-
-function loadBestScore() {
-  try {
-    return Number(localStorage.getItem('solitairexp-best-score') || 0);
-  } catch {
-    return 0;
-  }
-}
-
-export function saveBestScore(score) {
-  try {
-    localStorage.setItem('solitairexp-best-score', String(score));
-  } catch {
-    // best-effort
-  }
 }
 
 export function registerMove(scoreState, moveType) {
@@ -67,13 +50,6 @@ export function tickTimer(scoreState) {
     if (scoreState.score < 0) {
       scoreState.score = 0;
     }
-  }
-}
-
-export function finalizeScore(scoreState) {
-  if (scoreState.score > scoreState.bestScore) {
-    scoreState.bestScore = scoreState.score;
-    saveBestScore(scoreState.bestScore);
   }
 }
 

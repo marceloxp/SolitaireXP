@@ -109,6 +109,12 @@ function createTableauColumn(cards, columnIndex) {
     }));
   });
 
+  // Os cards são posicionados com position:absolute, então o container não
+  // cresce sozinho com a pilha; sem isso, pilhas longas ficam maiores que a
+  // altura mínima fixa e passam por cima do que vem depois do tabuleiro.
+  const stackedHeight = Math.max(0, cards.length - 1) * TABLEAU_OFFSET;
+  column.style.minHeight = `calc(var(--card-height) + ${stackedHeight + 110}px)`;
+
   return column;
 }
 
@@ -141,7 +147,6 @@ export function updateHud(hud, scoreState, gameState) {
   hud.querySelector('[data-score]').textContent = String(scoreState.score);
   hud.querySelector('[data-time]').textContent = formatHudTime(scoreState.elapsedSeconds);
   hud.querySelector('[data-moves]').textContent = String(gameState?.moves ?? 0);
-  hud.querySelector('[data-best]').textContent = String(scoreState.bestScore ?? 0);
 }
 
 function formatHudTime(totalSeconds) {

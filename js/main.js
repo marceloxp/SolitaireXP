@@ -13,7 +13,6 @@ import {
 import { attachDragHandlers } from './drag-handler.js';
 import {
   createScoreState,
-  finalizeScore,
   registerMove,
   tickTimer,
 } from './score.js';
@@ -39,10 +38,19 @@ let won = false;
 
 function boot() {
   bindMenu();
+  removeLegacyBestScore();
   const saved = loadGame();
   const continueBtn = document.querySelector('#btn-continue');
   continueBtn.hidden = !(saved?.gameState && !saved.gameState.won);
   showScreen('menu');
+}
+
+function removeLegacyBestScore() {
+  try {
+    localStorage.removeItem('solitairexp-best-score');
+  } catch {
+    // best-effort
+  }
 }
 
 function bindMenu() {
@@ -51,7 +59,7 @@ function bindMenu() {
     const saved = loadGame();
     if (saved?.gameState) {
       gameState = saved.gameState;
-      scoreState = { ...createScoreState(), ...saved.scoreState, bestScore: createScoreState().bestScore };
+      scoreState = { ...createScoreState(), ...saved.scoreState };
       showScreen('game');
       refresh();
       startTimer();
@@ -223,7 +231,6 @@ async function checkWin() {
   won = true;
   gameState.won = true;
   stopTimer();
-  finalizeScore(scoreState);
   updateHud(hud, scoreState, gameState);
   saveGame(gameState, scoreState);
 

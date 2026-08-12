@@ -9,6 +9,7 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --body-pad-x: 12px;
   --board-gap: clamp(4px, 1.6vw, 10px);
+  --toolbar-space: 84px;
   /* 7 colunas do tableau + 6 gaps precisam caber na largura útil da tela;
      o cálculo garante que nunca estoure horizontalmente em telas estreitas. */
   --card-width: clamp(
@@ -44,6 +45,9 @@ body {
 button {
   font: inherit;
   cursor: pointer;
+  /* evita o gesto de zoom do navegador ao dar duplo toque/clique rápido
+     (ex: monte de compra, que usa duplo clique pra reciclar/comprar) */
+  touch-action: manipulation;
 }
 
 #app {
@@ -54,6 +58,11 @@ button {
 .screen-menu,
 .screen-game {
   display: none;
+}
+
+.screen-game {
+  /* reserva espaço pro toolbar fixo no rodapé não tampar o fim do tabuleiro */
+  padding-bottom: calc(var(--toolbar-space) + var(--safe-bottom));
 }
 
 body[data-screen="menu"] .screen-menu,
@@ -97,27 +106,42 @@ body[data-screen="game"] .screen-game {
 }
 
 .toolbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 500;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
-  margin-bottom: 12px;
+  padding:
+    10px
+    calc(var(--body-pad-x) + var(--safe-right))
+    calc(10px + var(--safe-bottom))
+    calc(var(--body-pad-x) + var(--safe-left));
+  background: var(--felt-dark);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.25);
 }
 
 #hud {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   margin-bottom: 12px;
-  padding: 12px;
+  padding: 10px 16px;
   border-radius: 12px;
   background: var(--panel);
 }
 
 #hud .stat {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.95rem;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .board {
@@ -216,7 +240,7 @@ body[data-screen="game"] .screen-game {
 }
 
 @media (min-width: 760px) {
-  #hud {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  #hud .stat {
+    font-size: 1rem;
   }
 }

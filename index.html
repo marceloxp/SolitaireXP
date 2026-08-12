@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f6b3a">
-  <meta name="description" content="Paciência Klondike estilo Windows 3.1">
+  <meta name="description" content="Paciência Klondike">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SolitaireXP">
@@ -20,7 +20,7 @@
     <section class="screen-menu">
       <div class="menu-card">
         <h1>SolitaireXP</h1>
-        <p>Paciência Klondike — estilo Windows 3.1</p>
+        <p>Paciência Klondike</p>
         <div class="menu-actions">
           <button id="btn-new-game" type="button">Novo jogo</button>
           <button id="btn-continue" type="button">Continuar</button>
@@ -29,19 +29,18 @@
     </section>
 
     <section class="screen-game">
+      <div id="hud">
+        <div class="stat"><span>Pontos</span><strong data-score>0</strong></div>
+        <div class="stat"><span>Jogadas</span><strong data-moves>0</strong></div>
+        <div class="stat"><span>Tempo</span><strong data-time>00:00</strong></div>
+      </div>
+
+      <div id="game-root"></div>
+
       <div class="toolbar">
         <button id="btn-new-from-game" type="button">Novo jogo</button>
         <button id="btn-auto-complete" type="button" hidden>Completar automaticamente</button>
       </div>
-
-      <div id="hud">
-        <div class="stat"><span>Pontos</span><strong data-score>0</strong></div>
-        <div class="stat"><span>Tempo</span><strong data-time>00:00</strong></div>
-        <div class="stat"><span>Jogadas</span><strong data-moves>0</strong></div>
-        <div class="stat"><span>Recorde</span><strong data-best>0</strong></div>
-      </div>
-
-      <div id="game-root"></div>
     </section>
   </div>
 
