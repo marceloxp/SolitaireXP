@@ -36,8 +36,10 @@ futuras.
 - `js/win-animation.js` — animação de vitória (cascata GSAP) + overlay com
   botão "Jogar novamente"
 - `js/main.js` — bootstrap, liga os módulos, state machine simples (menu/jogo)
-- `assets/cards/*.png` — 52 sprites + verso (Kenney Playing Cards, CC0);
-  arquivo-fonte em `.resources/` (gitignored)
+- `assets/cards/*.png` — 52 sprites + verso, redimensionados (240×336) e
+  comprimidos (`pngquant`+`optipng`) a partir do pacote "Casino" em
+  `.resources/Casino/Cards/` (gitignored; licença não verificada — checar
+  antes de reusar fora deste projeto pessoal). Verso usado: `back01`.
 - `assets/icons/` — ícones do PWA, gerados a partir de
   `.resources/icon-512x512.png` (mantido fora do git, não apagar sem re-gerar
   os ícones antes)
