@@ -3,12 +3,20 @@
   --felt-dark: #0a4f2a;
   --panel: rgba(0, 0, 0, 0.25);
   --text: #f5f5dc;
-  --card-width: clamp(52px, 11vw, 86px);
-  --card-height: calc(var(--card-width) * 1.4);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+  --body-pad-x: 12px;
+  --board-gap: clamp(4px, 1.6vw, 10px);
+  /* 7 colunas do tableau + 6 gaps precisam caber na largura útil da tela;
+     o cálculo garante que nunca estoure horizontalmente em telas estreitas. */
+  --card-width: clamp(
+    34px,
+    calc((100vw - 2 * var(--body-pad-x) - var(--safe-left) - var(--safe-right) - 6 * var(--board-gap)) / 7),
+    86px
+  );
+  --card-height: calc(var(--card-width) * 1.4);
 }
 
 * {
@@ -28,9 +36,9 @@ body {
 body {
   padding:
     calc(12px + var(--safe-top))
-    calc(12px + var(--safe-right))
+    calc(var(--body-pad-x) + var(--safe-right))
     calc(12px + var(--safe-bottom))
-    calc(12px + var(--safe-left));
+    calc(var(--body-pad-x) + var(--safe-left));
 }
 
 button {
@@ -127,7 +135,7 @@ body[data-screen="game"] .screen-game {
 .stock-waste,
 .foundations {
   display: flex;
-  gap: 10px;
+  gap: var(--board-gap);
 }
 
 .top-spacer {
@@ -137,7 +145,7 @@ body[data-screen="game"] .screen-game {
 .tableau-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--board-gap);
 }
 
 .pile {
@@ -194,7 +202,17 @@ body[data-screen="game"] .screen-game {
 }
 
 .win-overlay p {
-  margin: 0;
+  margin: 0 0 20px;
+}
+
+.win-overlay-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 24px;
+  background: #f0e6c8;
+  color: #1f1f1f;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 @media (min-width: 760px) {

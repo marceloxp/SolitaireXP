@@ -1,4 +1,9 @@
-const CACHE_NAME = 'solitairexp-v2';
+const CACHE_NAME = 'solitairexp-v3';
+
+const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
+const RANK_LABELS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
+const CARD_ASSETS = SUITS.flatMap((suit) => RANK_LABELS.map((rank) => `./assets/cards/card_${suit}_${rank}.png`));
+
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +22,7 @@ const ASSETS = [
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/cards/card_back.png',
+  ...CARD_ASSETS,
 ];
 
 self.addEventListener('install', (event) => {

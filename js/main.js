@@ -24,7 +24,7 @@ import {
   renderGame,
   updateHud,
 } from './render.js';
-import { playWinAnimation, showWinOverlay } from './win-animation.js';
+import { clearWinAnimation, playWinAnimation, showWinOverlay } from './win-animation.js';
 
 const app = document.querySelector('#app');
 const hud = document.querySelector('#hud');
@@ -67,6 +67,7 @@ function showScreen(name) {
 
 function startNewGame() {
   stopTimer();
+  clearWinAnimation();
   won = false;
   gameState = dealNewGame();
   scoreState = createScoreState();
@@ -227,7 +228,7 @@ async function checkWin() {
   saveGame(gameState, scoreState);
 
   await playWinAnimation(gameRoot);
-  showWinOverlay(app);
+  showWinOverlay(app, () => startNewGame());
 }
 
 if ('serviceWorker' in navigator) {

@@ -5,6 +5,7 @@ export function playWinAnimation(container) {
   }
 
   cards.forEach((card, index) => {
+    card.classList.add('win-flying-card');
     gsap.set(card, {
       position: 'fixed',
       left: card.getBoundingClientRect().left,
@@ -24,10 +25,22 @@ export function playWinAnimation(container) {
   });
 }
 
-export function showWinOverlay(root) {
+export function clearWinAnimation() {
+  document.querySelectorAll('.win-flying-card').forEach((el) => el.remove());
+  document.querySelectorAll('.win-overlay').forEach((el) => el.remove());
+}
+
+export function showWinOverlay(root, onPlayAgain) {
   const overlay = document.createElement('div');
   overlay.className = 'win-overlay';
-  overlay.innerHTML = '<h2>Você venceu!</h2><p>Paciência completa.</p>';
+  overlay.innerHTML = `
+    <h2>Você venceu!</h2>
+    <p>Paciência completa.</p>
+    <button type="button" class="win-overlay-btn">Jogar novamente</button>
+  `;
+  overlay.querySelector('.win-overlay-btn').addEventListener('click', () => {
+    onPlayAgain?.();
+  });
   root.appendChild(overlay);
   return overlay;
 }
