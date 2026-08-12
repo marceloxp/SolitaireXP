@@ -331,6 +331,23 @@ Depois: **Continuar** → **Finalizar**.
   Banner não entra no precache do service worker (`ASSETS`): só é buscado por
   crawlers externos (Facebook/Twitter/WhatsApp etc.), nunca pelo próprio jogo
   rodando no navegador do jogador.
+- **Faixa branca no overscroll/rubber-band (PWA instalado no Android/Chrome)**:
+  ao puxar a tela além do limite (gesto nativo do Chrome, acontece mesmo sem
+  conteúdo saindo da viewport), o navegador pinta a área extra usando o
+  **`background-color` sólido** computado do elemento raiz — não as camadas
+  de `background-image` (gradientes/textura de feltro). Como `html`/`body`
+  só tinham `background` com imagens (o shorthand zera `background-color`
+  pro padrão, que é transparente → aparece branco), sobrava uma "faixa
+  branca" embaixo ao carregar e, pior, ao dar swipe pra cima a página
+  inteira "bouncava" mostrando essa área branca por baixo (com a toolbar
+  fixa parecendo "descolar" durante a animação do gesto — outro efeito
+  colateral do bounce, não um bug isolado da toolbar). Fix: `background-color:
+  var(--felt-dark)` explícito em `html, body` (separado do
+  `background-image` com os gradientes) + `overscroll-behavior: none` pra
+  desativar o bounce/glow em si. Também trocamos `height/min-height: 100%`
+  por `100dvh` (com fallback pro `100%`, que browsers sem suporte a `dvh`
+  simplesmente ignoram) — mais robusto que `100%` porque considera a altura
+  dinâmica da UI do navegador/gestos no mobile.
 
 ## Pendências conhecidas (não implementadas)
 
