@@ -1,0 +1,54 @@
+.card {
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  touch-action: none;
+  user-select: none;
+}
+
+.pile-tableau .card {
+  position: absolute;
+  left: 0;
+  top: var(--stack-offset, 0px);
+}
+
+.pile-waste .card,
+.pile-foundation .card,
+.pile-stock .card {
+  position: relative;
+}
+
+.card.draggable {
+  cursor: grab;
+}
+
+.card.dragging {
+  cursor: grabbing;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+.card.face-down {
+  filter: brightness(0.95);
+}
+
+.pile-waste,
+.pile-foundation,
+.pile-stock {
+  overflow: visible;
+}
+
+.pile-tableau {
+  position: relative;
+}
+
+@media (hover: none) {
+  .card.draggable::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
+}
