@@ -43,10 +43,20 @@ let history = [];
 function boot() {
   bindMenu();
   removeLegacyBestScore();
+  lockOrientation();
   const saved = loadGame();
   const continueBtn = document.querySelector('#btn-continue');
   continueBtn.hidden = !(saved?.gameState && !saved.gameState.won);
   showScreen('menu');
+}
+
+function lockOrientation() {
+  // Só funciona em PWA instalado (display standalone/fullscreen) ou em
+  // fullscreen de verdade — a maioria dos navegadores ignora silenciosamente
+  // fora desses contextos. O `manifest.json` (`orientation: "portrait"`) e o
+  // overlay de "gire o aparelho" (`css/style.css`) são o que realmente cobre
+  // o caso geral (aba de navegador comum).
+  screen.orientation?.lock?.('portrait')?.catch(() => {});
 }
 
 function removeLegacyBestScore() {

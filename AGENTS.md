@@ -236,6 +236,18 @@ Depois: **Continuar** → **Completar automaticamente**.
   vezes reaproveita o CSS antigo do cache HTTP. Se uma mudança de CSS parecer
   "não aplicada" durante testes, rode `playwright-cli close` e `open` de novo
   (sessão nova = cache novo) antes de desconfiar da regra em si.
+- **Orientação travada em retrato**: não existe um "lock" universal de
+  orientação numa aba de navegador comum (a Screen Orientation API só
+  funciona em fullscreen de verdade ou PWA instalado em modo
+  standalone/fullscreen — `screen.orientation.lock('portrait')`, chamado em
+  `lockOrientation()` no `boot()` do `js/main.js`, falha silenciosamente
+  fora desses contextos, por isso o `.catch(() => {})`). A cobertura real
+  pro caso geral é `manifest.json` (`"orientation": "portrait"`, vale pro
+  PWA instalado) + o overlay `#rotate-overlay` (`css/style.css`), que cobre
+  a tela com um aviso pra girar de volta quando o `@media (orientation:
+  landscape) and (hover: none) and (pointer: coarse)` bate — restrito a
+  telas de toque sem mouse pra não incomodar quem só deixa a janela do
+  desktop larga e baixa.
 
 ## Pendências conhecidas (não implementadas)
 

@@ -253,6 +253,56 @@ body[data-screen="game"] .screen-game {
   z-index: 2000;
 }
 
+.rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px;
+  text-align: center;
+  background: var(--felt-dark);
+  color: var(--text);
+}
+
+.rotate-overlay svg {
+  width: 64px;
+  height: 64px;
+  animation: rotate-hint 1.6s ease-in-out infinite;
+}
+
+.rotate-overlay p {
+  max-width: 320px;
+  font-size: 1rem;
+  margin: 0;
+}
+
+@keyframes rotate-hint {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-90deg);
+  }
+}
+
+/* Não é um "lock" de verdade (a Screen Orientation API não é suportada em
+   todo navegador fora de contexto fullscreen/PWA instalado) — isso é o
+   fallback universal: em paisagem, cobre o jogo com um aviso pra girar de
+   volta, em vez de deixar o tabuleiro esparramar num layout que não foi
+   pensado pra isso. Restrito a telas de toque sem mouse (hover:none +
+   pointer:coarse) pra não incomodar quem só deixou a janela do desktop
+   "larga e baixa".
+*/
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  .rotate-overlay {
+    display: flex;
+  }
+}
+
 .win-overlay {
   position: fixed;
   inset: 0;
