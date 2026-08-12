@@ -3,7 +3,7 @@
 // desktop) quando os critérios de instalabilidade do PWA são atendidos —
 // Safari/iOS e Firefox nunca disparam esse evento, então o botão
 // simplesmente nunca aparece nesses navegadores (usuário instala pelo menu
-// nativo do browser, como já era antes).
+// nativo do browser, como já era antes; ver instalar.html pro passo a passo).
 export function initPwaInstall() {
   const btn = document.querySelector('#btn-install');
   if (!btn) {

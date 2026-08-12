@@ -350,25 +350,53 @@ Depois: **Continuar** → **Finalizar**.
   dinâmica da UI do navegador/gestos no mobile.
 - **Botão "Instalar app"** (`#btn-install` em `.menu-actions`, lógica em
   `js/pwa-install.js`, chamada via `initPwaInstall()` no `boot()` do
-  `js/main.js`): escuta `beforeinstallprompt` (só dispara em browsers
-  Chromium — Chrome/Edge/Opera — quando os critérios de instalabilidade do
-  PWA são atendidos; Safari/iOS e Firefox nunca disparam, então o botão
-  simplesmente não aparece nesses navegadores, sem tratamento especial
-  necessário), guarda o evento, tira o `hidden` do botão; no clique chama
-  `.prompt()` (só pode ser chamado uma vez por evento) e aguarda
-  `.userChoice`; escuta `appinstalled` pra esconder o botão se o usuário
-  instalar por outro caminho (ex.: menu nativo do navegador); e checa
-  `matchMedia('(display-mode: standalone)')`/`navigator.standalone` (Safari)
-  no boot pra nem registrar os listeners se o app já estiver instalado.
-  **Achado um bug preexistente nesse processo**: `.menu-actions button`
-  tinha `display: inline-flex` mas faltava `.menu-actions button[hidden] {
-  display: none }` — mesma pegadinha do `[hidden]` documentada acima pro
-  `.toolbar`/`.about-overlay`, só que ninguém tinha notado ainda porque o
-  efeito (botão "Continuar" aparecendo mesmo sem jogo salvo) é sutil. Corrigido
-  junto (regra unificada `.menu-actions button[hidden], .toolbar
-  button[hidden] { display: none }`). `js/pwa-install.js` entra no precache
-  do service worker (`ASSETS`) como os outros módulos, pra manter a
-  cobertura 100% offline.
+  `js/main.js`): escuta `beforeinstallprompt` (API exclusiva de browsers
+  Chromium — Chrome/Edge/Opera Android/desktop — nunca dispara no iOS,
+  nem no Firefox; o botão simplesmente não aparece nesses casos, sem
+  tratamento especial necessário), guarda o evento, tira o `hidden`; no
+  clique chama `.prompt()` (só pode ser chamado uma vez por evento) e
+  espera `.userChoice`; escuta `appinstalled` pra esconder se o usuário
+  instalar por outro caminho; checa `matchMedia('(display-mode:
+  standalone)')`/`navigator.standalone` (Safari) no boot pra nem registrar
+  os listeners se já estiver instalado. `js/pwa-install.js` entra no
+  precache do service worker (`ASSETS`) como os outros módulos.
+  **Idas e vindas dessa feature**: implementado → removido (porque no iOS
+  nenhum navegador dispara `beforeinstallprompt`, e a ideia era substituir
+  por uma página de instruções) → **restaurado** (o usuário confirmou que o
+  botão nativo/próprio funciona bem no Android/Desktop Chrome, e preferiu
+  manter as duas coisas seguindo caminhos separados: o botão pra quem pode
+  usar, a página de instruções só existe pra quem quiser linkar
+  manualmente, sem aparecer na UI do menu). Ver também o item anterior
+  sobre o bug do `[hidden]` em `.menu-actions button`, que foi corrigido
+  nesse processo e ficou independente do botão em si (sem ele
+  `#btn-continue` aparecia mesmo sem jogo salvo).
+- **Página "Como instalar"** (`instalar.html` na raiz, standalone — não faz
+  parte do bundle do jogo, HTML/CSS/JS tudo num arquivo só, sem import de
+  `js/*.js`): explica o passo a passo de instalação por plataforma
+  (iOS/Safari, Android/Chrome, Desktop/Chrome-Edge) com detecção de SO via
+  `navigator.userAgent` pra já abrir na aba certa. **Não tem link nenhum
+  pra ela em lugar nenhum da UI do jogo** (decisão explícita do usuário:
+  "vamos deixar apenas o botão - nada de 'como instalar'") — o arquivo
+  existe no repo só como referência/pra uso manual futuro (ex.: linkar
+  numa rede social, mandar direto pra alguém). Fica fora do precache do
+  service worker (`ASSETS`), já que não é alcançável a partir do jogo.
+  Screenshots reais em `assets/help/` (capturados pelo usuário no próprio
+  iPhone e no Chrome desktop, redimensionados/otimizados em JPEG ~35-40KB
+  cada): `ios-1/2/3.jpg` (Safari: seta pro botão Compartilhar, menu com
+  "Adicionar à Tela de Início" marcado, confirmação com "Adicionar"
+  marcado), `ios-4.jpg` (resultado final em tela cheia), `ios-chrome-share.jpg`
+  (nota à parte pra quem usa Chrome no iPhone — mesmo fluxo, botão
+  Compartilhar fica na barra de endereço em vez do rodapé) e `desktop-1.jpg`
+  (barra de endereço do Chrome com o ícone de instalação + popup de
+  confirmação, cropada de um screenshot maior). **Faltam os screenshots do
+  Android/Chrome** (aba ainda usa os placeholders tracejados originais) —
+  pendente até alguém capturar num aparelho Android de verdade.
+  A generalização dos seletores `.menu-actions button` → `.menu-actions
+  button, .menu-actions a` em `css/style.css` (feita quando o link "Como
+  instalar" existia no menu) **ficou no CSS mesmo sem uso atual** — é
+  inofensiva e permite reusar o estilo de botão secundário
+  (`.menu-actions .btn-about`) num `<a>` no futuro, se a página voltar a
+  ser linkada.
 
 ## Pendências conhecidas (não implementadas)
 
