@@ -1,5 +1,5 @@
 import { locateCard, PILE } from './game-state.js';
-import { TABLEAU_OFFSET } from './render.js';
+import { TABLEAU_OFFSET, createCardElement } from './render.js';
 
 export function attachDragHandlers({
   gameState,
@@ -20,6 +20,7 @@ export function attachDragHandlers({
     const groupEls = getDragGroupElements(el, source);
     const startPositions = new Map();
     let dragged = false;
+    let peekEl = null;
 
     const draggable = Draggable.create(el, {
       type: 'x,y',
@@ -43,6 +44,12 @@ export function attachDragHandlers({
       onDragStart() {
         dragged = true;
         groupEls.forEach((node) => node.classList.add('dragging'));
+        // Fundação e monte de descarte só renderizam a carta do topo (as de
+        // baixo não têm elemento próprio no DOM). Sem isso, arrastar a carta
+        // do topo esvazia o container por completo e some com a pilha
+        // inteira, mostrando o visual de "área disponível" — mesmo tendo
+        // várias cartas embaixo no estado real.
+        peekEl = revealCardBeneath(gameState, source, startPositions.get(el)?.parent);
         moveGroupToDragLayer(groupEls);
       },
       onDrag() {
@@ -76,8 +83,13 @@ export function attachDragHandlers({
           : false;
 
         if (!accepted) {
+          // No sucesso, o refresh() já reconstrói o board do zero (removendo
+          // esse placeholder junto); só precisa limpar aqui no caminho da
+          // restauração, senão fica duplicado com a carta original voltando.
+          peekEl?.remove();
           restoreGroup(groupEls, startPositions);
         }
+        peekEl = null;
 
         groupEls.forEach((node) => node.classList.remove('dragging'));
         startPositions.clear();
@@ -102,6 +114,34 @@ function getDragGroupElements(el, source) {
   return [...column.querySelectorAll('.card')].filter((node) => {
     return Number(node.dataset.cardIndex) >= startIndex;
   });
+}
+
+function revealCardBeneath(gameState, source, parent) {
+  if (!parent) {
+    return null;
+  }
+  const cards = getUnderlyingPile(gameState, source);
+  if (!cards || cards.length < 2) {
+    return null;
+  }
+  const beneath = cards[cards.length - 2];
+  const node = createCardElement(beneath, {
+    pile: source.pile,
+    index: source.index,
+  });
+  node.style.pointerEvents = 'none';
+  parent.appendChild(node);
+  return node;
+}
+
+function getUnderlyingPile(gameState, source) {
+  if (source.pile === PILE.FOUNDATION) {
+    return gameState.foundations[source.index];
+  }
+  if (source.pile === PILE.WASTE) {
+    return gameState.waste;
+  }
+  return null;
 }
 
 function moveGroupToDragLayer(groupEls) {

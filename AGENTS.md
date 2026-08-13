@@ -397,6 +397,41 @@ Depois: **Continuar** → **Finalizar**.
   inofensiva e permite reusar o estilo de botão secundário
   (`.menu-actions .btn-about`) num `<a>` no futuro, se a página voltar a
   ser linkada.
+- **Carta "desaparecendo" ao arrastar do topo da fundação/waste**
+  (`js/drag-handler.js`): fundação (`createFoundations`) e waste
+  (`createStockWaste`) em `js/render.js` só criam elemento DOM pra carta do
+  topo — as cartas de baixo existem no `gameState` mas nunca tiveram nó
+  próprio. Isso significa que ao começar a arrastar a carta do topo (ex.:
+  mover o 3 de copas de volta pra um tableau, com A/2 de copas ainda por
+  baixo na fundação), `moveGroupToDragLayer` esvaziava o container por
+  completo — a pilha toda "sumia" e só sobrava o fundo tracejado de
+  "área disponível" (`.pile-foundation`/`.pile-stock` têm esse estilo
+  sempre, não só quando vazias — ao contrário de `.pile-tableau:empty`).
+  Se o drop era inválido, `restoreGroup` devolvia a carta original pro
+  lugar, dando a impressão de que "a última carta volta a aparecer".
+  Fix: `onDragStart` agora chama `revealCardBeneath()` antes de mover o
+  grupo pra `#drag-layer` — se a pilha de origem é fundação ou waste e
+  tem mais de 1 carta no estado, cria um elemento visual (não-draggable,
+  `pointer-events: none`) pra carta imediatamente abaixo (penúltima do
+  array) e injeta no container original, simulando o "próximo topo" real
+  enquanto a carta de cima está sendo arrastada. Em caso de drop **inválido**,
+  esse elemento precisa ser removido manualmente em `onRelease` antes de
+  `restoreGroup()` (senão duplica com a carta original voltando); em caso de
+  drop **válido**, não precisa de limpeza — `refresh()` já reconstrói o
+  board do zero (`renderGame` zera `innerHTML`), removendo o placeholder
+  junto. `createCardElement` precisou ser exportado de `render.js` pra ser
+  reusado em `drag-handler.js`. Tableau não tinha esse bug (cada carta da
+  coluna já é um nó DOM próprio, mover um grupo não afeta as cartas que
+  ficam).
+- **Topo do board invertido** (`renderGame`/`createStockWaste` em
+  `js/render.js`): ordem visual da fileira de cima passou de
+  `[Stock, Waste] ... [Fundações]` pra `[Fundações] ... [Waste, Stock]` —
+  fundações na esquerda, monte de compra (stock) no canto direito, e o
+  waste (cartas puxadas do monte) fica sempre imediatamente à esquerda do
+  stock. Mudança é só de ordem de `appendChild`/`append` (o `.top-row` é
+  grid `auto 1fr auto` e `.stock-waste`/`.foundations` são flex, ambos
+  só respeitam a ordem no DOM, sem `order` no CSS) — nenhuma lógica de
+  jogo, `data-index` ou seletor de CSS dependia da ordem antiga.
 
 ## Pendências conhecidas (não implementadas)
 

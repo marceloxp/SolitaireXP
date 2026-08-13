@@ -12,9 +12,9 @@ export function renderGame(root, state, handlers = {}) {
   const topRow = document.createElement('div');
   topRow.className = 'top-row';
 
-  topRow.appendChild(createStockWaste(state, handlers));
-  topRow.appendChild(createSpacer());
   topRow.appendChild(createFoundations(state));
+  topRow.appendChild(createSpacer());
+  topRow.appendChild(createStockWaste(state, handlers));
 
   const tableauRow = document.createElement('div');
   tableauRow.className = 'tableau-row';
@@ -68,7 +68,7 @@ function createStockWaste(state, handlers) {
     }));
   }
 
-  wrap.append(stock, waste);
+  wrap.append(waste, stock);
   return wrap;
 }
 
@@ -124,7 +124,7 @@ function createTableauColumn(cards, columnIndex) {
   return column;
 }
 
-function createCardElement(card, options) {
+export function createCardElement(card, options) {
   const el = document.createElement('div');
   el.className = 'card';
   if (!card.faceUp && options.pile !== PILE.STOCK) {
