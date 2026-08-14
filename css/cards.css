@@ -21,7 +21,12 @@
 }
 
 .pile-waste .card,
-.pile-foundation .card,
+.pile-foundation .card {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .pile-stock .card {
   position: relative;
 }

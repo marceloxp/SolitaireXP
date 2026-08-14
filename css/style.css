@@ -357,10 +357,33 @@ html.has-saved-game #btn-continue {
   border-radius: 8px;
 }
 
-.pile-stock,
 .pile-foundation,
-.pile-tableau:empty {
-  border: 2px dashed rgba(255, 255, 255, 0.25);
+.pile-waste,
+.pile-stock:not(.empty) {
+  /* Altura fixa: fundação/waste vazios usam min-height + borda tracejada
+     (border-box). Com a carta em position:relative o filho somava à borda e
+     a pilha crescia ~4px — a fileira de cima ficava mais alta e empurrava o
+     tableau pra baixo na primeira carta que subia. */
+  height: var(--card-height);
+  flex-shrink: 0;
+}
+
+.pile-stock.empty {
+  height: var(--card-height);
+  flex-shrink: 0;
+}
+
+.pile-foundation:not(:has(.card)),
+.pile-waste:not(:has(.card)),
+.pile-tableau:empty,
+.pile-stock.empty {
+  /* outline em vez de border: a borda tracejada não come espaço interno, então
+     o slot vazio tem exatamente o tamanho de uma carta. Com border + carta
+     absolute, o tracejado ficava visível ao redor da carta (gap de ~2px) —
+     parecia que a carta era menor que a "área disponível". Só pilhas vazias
+     mostram o placeholder; com carta, some. */
+  outline: 2px dashed rgba(255, 255, 255, 0.25);
+  outline-offset: -2px;
   background: rgba(0, 0, 0, 0.12);
 }
 
