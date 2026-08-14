@@ -244,6 +244,13 @@ body[data-screen="game"] .screen-game {
   display: none;
 }
 
+/* Script inline no <head> lê o localStorage antes do primeiro paint e põe
+   .has-saved-game no <html> quando há partida em andamento — assim o
+   #btn-continue já nasce visível, sem esperar o módulo main.js/boot(). */
+html.has-saved-game #btn-continue {
+  display: inline-flex;
+}
+
 .menu-actions button .icon,
 .menu-actions a .icon,
 .toolbar button .icon,
