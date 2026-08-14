@@ -26,6 +26,7 @@ import {
 } from './render.js';
 import { clearWinAnimation, playWinAnimation, showWinOverlay } from './win-animation.js';
 import { initPwaInstall } from './pwa-install.js';
+import { initSplash } from './splash.js';
 
 const app = document.querySelector('#app');
 const hud = document.querySelector('#hud');
@@ -382,4 +383,9 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-boot();
+async function start() {
+  await initSplash();
+  boot();
+}
+
+start();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solitairexp-v17';
+const CACHE_NAME = 'solitairexp-v18';
 
 const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANK_LABELS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
@@ -21,6 +21,7 @@ const ASSETS = [
   './js/drag-handler.js',
   './js/win-animation.js',
   './js/pwa-install.js',
+  './js/splash.js',
   './js/main.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',

@@ -34,8 +34,31 @@
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/cards.css">
+  <style>
+    /* Crítico: splash visível antes do CSS externo carregar */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #0a4f2a;
+    }
+
+    body.is-booting {
+      overflow: hidden;
+    }
+  </style>
 </head>
-<body data-screen="menu">
+<body data-screen="menu" class="is-booting">
+  <div id="splash" role="status" aria-live="polite" aria-label="Carregando SolitaireXP">
+    <div class="splash-content">
+      <img src="assets/icons/icon-192.png" alt="" class="splash-logo" width="192" height="192">
+      <p class="splash-title">SolitaireXP</p>
+    </div>
+  </div>
+
   <div id="app">
     <section class="screen-menu">
       <div class="menu-card">
