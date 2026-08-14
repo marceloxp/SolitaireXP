@@ -72,6 +72,41 @@ function createStockWaste(state, handlers) {
   return wrap;
 }
 
+export function syncStockPileDom(state) {
+  const stock = document.querySelector('.pile-stock');
+  if (!stock) {
+    return;
+  }
+  stock.querySelector('.card')?.remove();
+  stock.classList.remove('empty');
+  stock.textContent = '';
+  if (state.stock.length) {
+    stock.appendChild(createCardElement(state.stock[state.stock.length - 1], {
+      pile: PILE.STOCK,
+      draggable: false,
+    }));
+  } else {
+    stock.classList.add('empty');
+    stock.textContent = '↻';
+  }
+}
+
+export function syncWastePileDom(state) {
+  const waste = document.querySelector('.pile-waste');
+  if (!waste) {
+    return;
+  }
+  waste.querySelector('.card')?.remove();
+  if (state.waste.length) {
+    const top = state.waste[state.waste.length - 1];
+    waste.appendChild(createCardElement(top, {
+      pile: PILE.WASTE,
+      index: 0,
+      draggable: true,
+    }));
+  }
+}
+
 function createFoundations(state) {
   const wrap = document.createElement('div');
   wrap.className = 'foundations';
@@ -93,6 +128,24 @@ function createFoundations(state) {
   return wrap;
 }
 
+function tableauColumnMinHeight(cardCount) {
+  if (cardCount === 0) {
+    return 'var(--card-height)';
+  }
+  const stackedHeight = Math.max(0, cardCount - 1) * TABLEAU_OFFSET;
+  const tailBuffer = cardCount > 1 ? 110 : 0;
+  return `calc(var(--card-height) + ${stackedHeight + tailBuffer}px)`;
+}
+
+function applyTableauColumnHeight(column, cardCount) {
+  column.style.minHeight = tableauColumnMinHeight(cardCount);
+  if (cardCount === 0) {
+    column.style.height = 'var(--card-height)';
+  } else {
+    column.style.height = '';
+  }
+}
+
 function createTableauColumn(cards, columnIndex) {
   const column = document.createElement('div');
   column.className = 'pile pile-tableau';
@@ -109,19 +162,19 @@ function createTableauColumn(cards, columnIndex) {
     }));
   });
 
-  if (cards.length === 0) {
-    // Coluna vazia: só marca o espaço de uma carta (igual às fundações), em
-    // vez do "buffer" extra usado pra pilhas com cartas.
-    column.style.minHeight = 'var(--card-height)';
-  } else {
-    // Os cards são posicionados com position:absolute, então o container não
-    // cresce sozinho com a pilha; sem isso, pilhas longas ficam maiores que a
-    // altura mínima fixa e passam por cima do que vem depois do tabuleiro.
-    const stackedHeight = Math.max(0, cards.length - 1) * TABLEAU_OFFSET;
-    column.style.minHeight = `calc(var(--card-height) + ${stackedHeight + 110}px)`;
-  }
+  applyTableauColumnHeight(column, cards.length);
 
   return column;
+}
+
+export function syncTableauColumnHeights() {
+  document.querySelectorAll('.pile-tableau').forEach((column) => {
+    const domCardCount = column.querySelectorAll('.card').length;
+    // Só conta cartas no DOM: coluna vazia (cartas no drag-layer ou a caminho)
+    // fica sempre com altura de 1 carta — evita o placeholder tracejado
+    // esticar até o tamanho da pilha que ainda vai chegar.
+    applyTableauColumnHeight(column, domCardCount);
+  });
 }
 
 export function createCardElement(card, options) {

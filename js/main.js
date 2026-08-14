@@ -22,11 +22,27 @@ import {
   getCardElements,
   getDropTargets,
   renderGame,
+  syncTableauColumnHeights,
+  syncStockPileDom,
+  syncWastePileDom,
   updateHud,
 } from './render.js';
 import { clearWinAnimation, playWinAnimation, showWinOverlay } from './win-animation.js';
 import { initPwaInstall } from './pwa-install.js';
 import { initSplash } from './splash.js';
+import {
+  animateAutoCompleteMoves,
+  animateCardToTarget,
+  animateDragGroupOnLayer,
+  animateStockToWaste,
+  animateWasteToPlay,
+  animateWasteToStockUndo,
+  captureUndoContext,
+  detectUndoMove,
+  getGroupTargetRects,
+  getPlayTargetRect,
+  playUndoAnimation,
+} from './move-animation.js';
 
 const app = document.querySelector('#app');
 const hud = document.querySelector('#hud');
@@ -177,7 +193,7 @@ function stopTimer() {
   }
 }
 
-function refresh() {
+async function refresh() {
   if (detachDrag) {
     detachDrag();
     detachDrag = null;
@@ -220,65 +236,136 @@ function updateUndoButton() {
   btn.hidden = won || !history.length;
 }
 
-function handleUndo() {
+async function handleUndo() {
   if (won || !history.length) {
     return;
   }
   const snapshot = history.pop();
+  const undoMove = detectUndoMove(gameState, snapshot.gameState);
+  const before = captureUndoContext();
+
   gameState = snapshot.gameState;
   scoreState = snapshot.scoreState;
-  refresh();
+
+  if (detachDrag) {
+    detachDrag();
+    detachDrag = null;
+  }
+
+  if (undoMove.type === 'stock-draw' && before.wasteCardEl) {
+    const fromRect = before.wasteCardEl.getBoundingClientRect();
+    const flying = before.wasteCardEl;
+    dragLayer.appendChild(flying);
+    syncWastePileDom(gameState);
+    syncStockPileDom(gameState);
+    const stockEl = document.querySelector('.pile-stock');
+    const toRect = (stockEl?.querySelector('.card') ?? stockEl)?.getBoundingClientRect();
+    const card = gameState.stock[gameState.stock.length - 1];
+    await animateWasteToStockUndo(flying, card, fromRect, toRect);
+    await refresh();
+    return;
+  }
+
+  await playUndoAnimation(undoMove, before, gameState);
+  await refresh();
 }
 
-function handleStockClick() {
+async function handleStockClick() {
   if (won) {
     return;
   }
   const snapshot = snapshotState();
-  const result = drawFromStock(gameState);
-  if (result.action !== 'none') {
+
+  if (gameState.stock.length) {
+    const stockCardEl = document.querySelector('.pile-stock .card');
+    if (!stockCardEl) {
+      return;
+    }
+
+    const fromRect = stockCardEl.getBoundingClientRect();
+    const wastePile = document.querySelector('.pile-waste');
+    const toRect = (wastePile.querySelector('.card') ?? wastePile).getBoundingClientRect();
+
+    const result = drawFromStock(gameState);
+    if (result.action !== 'draw') {
+      return;
+    }
+
     pushHistory(snapshot);
+    const drawnCard = gameState.waste[gameState.waste.length - 1];
+
+    if (detachDrag) {
+      detachDrag();
+      detachDrag = null;
+    }
+
+    syncStockPileDom(gameState);
+    await animateStockToWaste(stockCardEl, drawnCard, fromRect, toRect);
+    await refresh();
+    return;
   }
-  refresh();
+
+  if (!gameState.waste.length) {
+    return;
+  }
+
+  const result = drawFromStock(gameState);
+  if (result.action === 'recycle') {
+    pushHistory(snapshot);
+    await refresh();
+  }
 }
 
-function handleDropAttempt({ cardId, source, target }) {
+async function handleDropAttempt({ cardId, source, target, groupEls }) {
   if (won) {
     return false;
   }
 
   const snapshot = snapshotState();
-
   let result;
+
   if (target.pile === PILE.TABLEAU) {
     result = applyMoveToTableau(gameState, source, target.index);
-    if (result.ok) {
-      pushHistory(snapshot);
-      registerMove(scoreState, scoreTypeToTableau(source.pile));
-      if (result.flipped) {
-        registerMove(scoreState, 'reveal-tableau');
-      }
-      refresh();
-      checkWin();
-      return true;
-    }
-  }
-
-  if (target.pile === PILE.FOUNDATION) {
+  } else if (target.pile === PILE.FOUNDATION) {
     result = applyMoveToFoundation(gameState, source, target.index);
-    if (result.ok) {
-      pushHistory(snapshot);
-      registerMove(scoreState, scoreTypeToFoundation(source.pile));
-      if (result.flipped) {
-        registerMove(scoreState, 'reveal-tableau');
-      }
-      refresh();
-      checkWin();
-      return true;
-    }
+  } else {
+    return false;
   }
 
-  return false;
+  if (!result.ok) {
+    return false;
+  }
+
+  pushHistory(snapshot);
+  registerMove(
+    scoreState,
+    target.pile === PILE.TABLEAU
+      ? scoreTypeToTableau(source.pile)
+      : scoreTypeToFoundation(source.pile),
+  );
+  if (result.flipped) {
+    registerMove(scoreState, 'reveal-tableau');
+  }
+
+  if (detachDrag) {
+    detachDrag();
+    detachDrag = null;
+  }
+
+  if (source.pile === PILE.WASTE) {
+    syncWastePileDom(gameState);
+  }
+
+  syncTableauColumnHeights();
+
+  if (groupEls?.length) {
+    const targetRects = getGroupTargetRects(gameState, source, target, cardId);
+    await animateDragGroupOnLayer(groupEls, targetRects);
+  }
+
+  await refresh();
+  checkWin();
+  return true;
 }
 
 function scoreTypeToTableau(fromPile) {
@@ -298,23 +385,66 @@ function scoreTypeToFoundation(fromPile) {
   return 'tableau-to-foundation';
 }
 
-function handleCardClick(cardId) {
+async function finishClickMove({
+  snapshot,
+  cardEl,
+  fromRect,
+  cardId,
+  fromPile,
+  scoreType,
+  flipped,
+}) {
+  pushHistory(snapshot);
+  registerMove(scoreState, scoreType);
+  if (flipped) {
+    registerMove(scoreState, 'reveal-tableau');
+  }
+
+  if (detachDrag) {
+    detachDrag();
+    detachDrag = null;
+  }
+
+  syncTableauColumnHeights();
+
+  const located = locateCard(gameState, cardId);
+  const toRect = getPlayTargetRect(gameState, located.pile, located.index ?? 0, cardId);
+
+  if (fromPile === PILE.WASTE) {
+    syncWastePileDom(gameState);
+    await animateWasteToPlay(cardEl, fromRect, toRect);
+  } else {
+    await animateCardToTarget(cardEl, fromRect, toRect);
+  }
+
+  await refresh();
+  checkWin();
+}
+
+async function handleCardClick(cardId) {
   if (won) {
     return;
   }
   const source = locateCard(gameState, cardId);
   const fromPile = source?.pile;
   const snapshot = snapshotState();
+  const cardEl = document.querySelector(`#game-root [data-card-id="${cardId}"]`);
+  if (!cardEl) {
+    return;
+  }
+  const fromRect = cardEl.getBoundingClientRect();
 
   const foundationResult = autoMoveToFoundation(gameState, cardId);
   if (foundationResult.ok) {
-    pushHistory(snapshot);
-    registerMove(scoreState, scoreTypeToFoundation(fromPile));
-    if (foundationResult.flipped) {
-      registerMove(scoreState, 'reveal-tableau');
-    }
-    refresh();
-    checkWin();
+    await finishClickMove({
+      snapshot,
+      cardEl,
+      fromRect,
+      cardId,
+      fromPile,
+      scoreType: scoreTypeToFoundation(fromPile),
+      flipped: foundationResult.flipped,
+    });
     return;
   }
 
@@ -325,13 +455,15 @@ function handleCardClick(cardId) {
   for (let i = 0; i < gameState.tableau.length; i += 1) {
     const tableauResult = applyMoveToTableau(gameState, source, i);
     if (tableauResult.ok) {
-      pushHistory(snapshot);
-      registerMove(scoreState, scoreTypeToTableau(fromPile));
-      if (tableauResult.flipped) {
-        registerMove(scoreState, 'reveal-tableau');
-      }
-      refresh();
-      checkWin();
+      await finishClickMove({
+        snapshot,
+        cardEl,
+        fromRect,
+        cardId,
+        fromPile,
+        scoreType: scoreTypeToTableau(fromPile),
+        flipped: tableauResult.flipped,
+      });
       return;
     }
   }
@@ -342,7 +474,7 @@ function updateAutoCompleteButton() {
   btn.hidden = !canAutoComplete(gameState);
 }
 
-function runAutoComplete() {
+async function runAutoComplete() {
   if (won || !canAutoComplete(gameState)) {
     return;
   }
@@ -353,13 +485,23 @@ function runAutoComplete() {
   }
 
   const snapshot = snapshotState();
+  const cardIds = moves.map((move) => move.cardId);
+
   moves.forEach((move) => {
     const source = locateCard(gameState, move.cardId);
     applyMoveToFoundation(gameState, source, move.foundationIndex);
     registerMove(scoreState, 'tableau-to-foundation');
   });
   pushHistory(snapshot);
-  refresh();
+
+  if (detachDrag) {
+    detachDrag();
+    detachDrag = null;
+  }
+
+  syncTableauColumnHeights();
+  await animateAutoCompleteMoves(gameState, cardIds);
+  await refresh();
   checkWin();
 }
 

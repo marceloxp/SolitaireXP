@@ -1,5 +1,5 @@
 import { locateCard, PILE } from './game-state.js';
-import { TABLEAU_OFFSET, createCardElement } from './render.js';
+import { TABLEAU_OFFSET, createCardElement, syncTableauColumnHeights } from './render.js';
 
 export function attachDragHandlers({
   gameState,
@@ -25,13 +25,6 @@ export function attachDragHandlers({
     const draggable = Draggable.create(el, {
       type: 'x,y',
       inertia: false,
-      // O default do GSAP (true) sobe o z-index do elemento pressionado pra
-      // cima de todos os irmãos assim que o "press" acontece — mesmo sem
-      // arrasto real. Isso fazia uma carta no meio da pilha "pular" pra
-      // frente das cartas seguintes num simples clique, e num arraste de
-      // grupo colocava a carta "pega" acima das outras do próprio grupo,
-      // bagunçando a ordem visual. O z-index de cada carta já é controlado
-      // manualmente (`render.js`/`restoreGroup`), então desligamos o boost.
       zIndexBoost: false,
       onPress() {
         dragged = false;
@@ -44,20 +37,10 @@ export function attachDragHandlers({
       onDragStart() {
         dragged = true;
         groupEls.forEach((node) => node.classList.add('dragging'));
-        // Fundação e monte de descarte só renderizam a carta do topo (as de
-        // baixo não têm elemento próprio no DOM). Sem isso, arrastar a carta
-        // do topo esvazia o container por completo e some com a pilha
-        // inteira, mostrando o visual de "área disponível" — mesmo tendo
-        // várias cartas embaixo no estado real.
         peekEl = revealCardBeneath(gameState, source, startPositions.get(el)?.parent);
         moveGroupToDragLayer(groupEls);
       },
       onDrag() {
-        // O offset em cascata (idx * TABLEAU_OFFSET) já foi aplicado como
-        // "top" estático em moveGroupToDragLayer; aqui só replicamos o delta
-        // bruto do arraste (dx/dy) pra mover o grupo em bloco. Somar o
-        // offset de novo aqui fazia as cartas se afastarem verticalmente a
-        // cada pixel arrastado.
         const dx = this.x;
         const dy = this.y;
         groupEls.slice(1).forEach((node) => {
@@ -73,27 +56,35 @@ export function attachDragHandlers({
           return;
         }
 
-        const dropTarget = findDropTarget(this.pointerEvent.clientX, this.pointerEvent.clientY, getDropTargets());
-        const accepted = dropTarget
-          ? onDropAttempt({
-              cardId,
-              source,
-              target: parseDropTarget(dropTarget),
-            })
-          : false;
+        const dropTarget = findDropTarget(
+          this.pointerEvent.clientX,
+          this.pointerEvent.clientY,
+          getDropTargets(),
+        );
 
-        if (!accepted) {
-          // No sucesso, o refresh() já reconstrói o board do zero (removendo
-          // esse placeholder junto); só precisa limpar aqui no caminho da
-          // restauração, senão fica duplicado com a carta original voltando.
-          peekEl?.remove();
-          restoreGroup(groupEls, startPositions);
+        const finish = (accepted) => {
+          if (!accepted) {
+            peekEl?.remove();
+            restoreGroup(groupEls, startPositions);
+          } else {
+            peekEl?.remove();
+          }
+          groupEls.forEach((node) => node.classList.remove('dragging'));
+          startPositions.clear();
+          dragged = false;
+        };
+
+        if (!dropTarget) {
+          finish(false);
+          return;
         }
-        peekEl = null;
 
-        groupEls.forEach((node) => node.classList.remove('dragging'));
-        startPositions.clear();
-        dragged = false;
+        Promise.resolve(onDropAttempt({
+          cardId,
+          source,
+          target: parseDropTarget(dropTarget),
+          groupEls,
+        })).then(finish);
       },
     })[0];
 
@@ -158,8 +149,10 @@ function moveGroupToDragLayer(groupEls) {
       top: rect.top - layerRect.top + idx * TABLEAU_OFFSET,
       x: 0,
       y: 0,
+      zIndex: 3000 + idx,
     });
   });
+  syncTableauColumnHeights();
 }
 
 function restoreGroup(groupEls, startPositions) {
@@ -169,12 +162,13 @@ function restoreGroup(groupEls, startPositions) {
       return;
     }
     original.parent.appendChild(node);
-    gsap.set(node, { clearProps: 'transform,x,y,left,top,position' });
+    gsap.set(node, { clearProps: 'transform,x,y,left,top,position,zIndex' });
     node.style.zIndex = String(10 + Number(node.dataset.cardIndex || 0));
     if (node.dataset.cardIndex) {
       node.style.setProperty('--stack-offset', `${Number(node.dataset.cardIndex) * TABLEAU_OFFSET}px`);
     }
   });
+  syncTableauColumnHeights();
 }
 
 function findDropTarget(x, y, targets) {

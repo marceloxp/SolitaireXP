@@ -151,6 +151,10 @@ button {
   }
 }
 
+#game-root.is-animating {
+  pointer-events: none;
+}
+
 .screen-menu,
 .screen-game {
   display: none;
@@ -408,11 +412,18 @@ html.has-saved-game #btn-continue {
   width: 100%;
 }
 
+.pile-tableau:empty {
+  /* Altura fixa enquanto vazia: evita placeholder tracejado esticado se o
+     min-height inline ficar defasado durante animação/arrasto. */
+  height: var(--card-height);
+}
+
 #drag-layer {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 2000;
+  perspective: 800px;
 }
 
 .rotate-overlay {
