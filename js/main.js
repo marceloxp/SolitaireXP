@@ -11,7 +11,7 @@ import {
   locateCard,
   serializeState,
 } from './game-state.js';
-import { attachDragHandlers } from './drag-handler.js';
+import { attachDragHandlers, getTableauGroupElements } from './drag-handler.js';
 import {
   createScoreState,
   registerMove,
@@ -41,6 +41,8 @@ import {
   detectUndoMove,
   getGroupTargetRects,
   getPlayTargetRect,
+  mountFlyingCard,
+  mountTableauGroupOnLayer,
   playUndoAnimation,
 } from './move-animation.js';
 
@@ -255,7 +257,7 @@ async function handleUndo() {
   if (undoMove.type === 'stock-draw' && before.wasteCardEl) {
     const fromRect = before.wasteCardEl.getBoundingClientRect();
     const flying = before.wasteCardEl;
-    dragLayer.appendChild(flying);
+    mountFlyingCard(flying, fromRect);
     syncWastePileDom(gameState);
     syncStockPileDom(gameState);
     const stockEl = document.querySelector('.pile-stock');
@@ -299,6 +301,7 @@ async function handleStockClick() {
       detachDrag = null;
     }
 
+    mountFlyingCard(stockCardEl, fromRect);
     syncStockPileDom(gameState);
     await animateStockToWaste(stockCardEl, drawnCard, fromRect, toRect);
     await refresh();
@@ -388,12 +391,15 @@ function scoreTypeToFoundation(fromPile) {
 async function finishClickMove({
   snapshot,
   cardEl,
-  fromRect,
   cardId,
   fromPile,
   scoreType,
   flipped,
+  groupEls,
+  target,
 }) {
+  const fromRect = cardEl.getBoundingClientRect();
+
   pushHistory(snapshot);
   registerMove(scoreState, scoreType);
   if (flipped) {
@@ -405,15 +411,22 @@ async function finishClickMove({
     detachDrag = null;
   }
 
-  syncTableauColumnHeights();
-
-  const located = locateCard(gameState, cardId);
-  const toRect = getPlayTargetRect(gameState, located.pile, located.index ?? 0, cardId);
-
   if (fromPile === PILE.WASTE) {
+    mountFlyingCard(cardEl, fromRect);
     syncWastePileDom(gameState);
+    const located = locateCard(gameState, cardId);
+    const toRect = getPlayTargetRect(gameState, located.pile, located.index ?? 0, cardId);
     await animateWasteToPlay(cardEl, fromRect, toRect);
+  } else if (target?.pile === PILE.TABLEAU && groupEls?.length) {
+    mountTableauGroupOnLayer(groupEls);
+    syncTableauColumnHeights();
+    const targetRects = getGroupTargetRects(gameState, null, target, cardId);
+    await animateDragGroupOnLayer(groupEls, targetRects);
   } else {
+    mountFlyingCard(cardEl, fromRect);
+    syncTableauColumnHeights();
+    const located = locateCard(gameState, cardId);
+    const toRect = getPlayTargetRect(gameState, located.pile, located.index ?? 0, cardId);
     await animateCardToTarget(cardEl, fromRect, toRect);
   }
 
@@ -432,18 +445,21 @@ async function handleCardClick(cardId) {
   if (!cardEl) {
     return;
   }
-  const fromRect = cardEl.getBoundingClientRect();
+
+  const groupEls = source?.pile === PILE.TABLEAU
+    ? getTableauGroupElements(cardEl, source)
+    : [cardEl];
 
   const foundationResult = autoMoveToFoundation(gameState, cardId);
   if (foundationResult.ok) {
     await finishClickMove({
       snapshot,
       cardEl,
-      fromRect,
       cardId,
       fromPile,
       scoreType: scoreTypeToFoundation(fromPile),
       flipped: foundationResult.flipped,
+      groupEls: [cardEl],
     });
     return;
   }
@@ -458,11 +474,12 @@ async function handleCardClick(cardId) {
       await finishClickMove({
         snapshot,
         cardEl,
-        fromRect,
         cardId,
         fromPile,
         scoreType: scoreTypeToTableau(fromPile),
         flipped: tableauResult.flipped,
+        groupEls,
+        target: { pile: PILE.TABLEAU, index: i },
       });
       return;
     }

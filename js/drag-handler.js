@@ -17,7 +17,7 @@ export function attachDragHandlers({
       return;
     }
 
-    const groupEls = getDragGroupElements(el, source);
+    const groupEls = getTableauGroupElements(el, source);
     const startPositions = new Map();
     let dragged = false;
     let peekEl = null;
@@ -96,7 +96,7 @@ export function attachDragHandlers({
   };
 }
 
-function getDragGroupElements(el, source) {
+export function getTableauGroupElements(el, source) {
   if (source.pile !== PILE.TABLEAU) {
     return [el];
   }

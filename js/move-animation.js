@@ -40,6 +40,13 @@ function mountOnLayer(cardEl, fromRect) {
   return layerRect;
 }
 
+export function mountFlyingCard(cardEl, fromRect) {
+  if (!cardEl || !fromRect || cardEl.parentElement === getLayer()) {
+    return;
+  }
+  mountOnLayer(cardEl, fromRect);
+}
+
 export function captureCardPositions(root = getRoot()) {
   const map = new Map();
   if (!root) {
@@ -131,21 +138,25 @@ export function getGroupTargetRects(state, source, target, cardId) {
   return [];
 }
 
-async function flyOnLayer(cardEl, fromRect, toRect) {
-  if (!cardEl || !fromRect || !toRect || prefersReducedMotion()) {
-    return;
-  }
-
-  mountOnLayer(cardEl, fromRect);
+function flyDelta(cardEl, fromRect, toRect) {
   const dx = toRect.left - fromRect.left;
   const dy = toRect.top - fromRect.top;
-
-  await gsap.to(cardEl, {
+  gsap.set(cardEl, { x: 0, y: 0, rotateY: 0 });
+  return gsap.to(cardEl, {
     x: dx,
     y: dy,
     duration: DURATION,
     ease: EASE,
   });
+}
+
+async function flyOnLayer(cardEl, fromRect, toRect) {
+  if (!cardEl || !fromRect || !toRect || prefersReducedMotion()) {
+    return;
+  }
+
+  mountFlyingCard(cardEl, fromRect);
+  await flyDelta(cardEl, fromRect, toRect);
   cardEl.remove();
   gsap.set(cardEl, { clearProps: 'all' });
 }
@@ -158,15 +169,8 @@ async function flyManyOnLayer(flights) {
   setAnimating(true);
   try {
     const tweens = flights.map(({ cardEl, fromRect, toRect }) => {
-      mountOnLayer(cardEl, fromRect);
-      const dx = toRect.left - fromRect.left;
-      const dy = toRect.top - fromRect.top;
-      return gsap.to(cardEl, {
-        x: dx,
-        y: dy,
-        duration: DURATION,
-        ease: EASE,
-      });
+      mountFlyingCard(cardEl, fromRect);
+      return flyDelta(cardEl, fromRect, toRect);
     });
     await Promise.all(tweens);
     flights.forEach(({ cardEl }) => {
@@ -176,6 +180,30 @@ async function flyManyOnLayer(flights) {
   } finally {
     setAnimating(false);
   }
+}
+
+export function mountTableauGroupOnLayer(groupEls) {
+  if (!groupEls?.length) {
+    return;
+  }
+
+  const layer = getLayer();
+  const first = groupEls[0];
+  const rect = first.getBoundingClientRect();
+  const layerRect = layer.getBoundingClientRect();
+
+  groupEls.forEach((node, idx) => {
+    layer.appendChild(node);
+    gsap.set(node, {
+      position: 'absolute',
+      left: rect.left - layerRect.left,
+      top: rect.top - layerRect.top + idx * TABLEAU_OFFSET,
+      x: 0,
+      y: 0,
+      zIndex: LAYER_Z + idx,
+    });
+  });
+  syncTableauColumnHeights();
 }
 
 export async function animateStockToWaste(cardEl, drawnCard, fromRect, toRect) {
@@ -189,11 +217,17 @@ export async function animateStockToWaste(cardEl, drawnCard, fromRect, toRect) {
     return;
   }
 
-  mountOnLayer(cardEl, fromRect);
+  mountFlyingCard(cardEl, fromRect);
   setAnimating(true);
 
   try {
-    gsap.set(cardEl, { rotateY: 0, transformPerspective: 600 });
+    gsap.set(cardEl, {
+      rotateY: 0,
+      transformPerspective: 600,
+      transformOrigin: '50% 50%',
+      x: 0,
+      y: 0,
+    });
     const faceUpUrl = cardImagePath(drawnCard);
 
     await gsap.to(cardEl, { rotateY: 90, duration: 0.09, ease: 'power1.in' });
@@ -201,9 +235,7 @@ export async function animateStockToWaste(cardEl, drawnCard, fromRect, toRect) {
     cardEl.classList.remove('face-down');
     await gsap.to(cardEl, { rotateY: 0, duration: 0.09, ease: 'power1.out' });
 
-    const dx = toRect.left - fromRect.left;
-    const dy = toRect.top - fromRect.top;
-    await gsap.to(cardEl, { x: dx, y: dy, duration: DURATION, ease: EASE });
+    await flyDelta(cardEl, fromRect, toRect);
   } finally {
     cardEl.remove();
     gsap.set(cardEl, { clearProps: 'all' });
@@ -217,7 +249,13 @@ export async function animateWasteToPlay(cardEl, fromRect, toRect) {
   }
   setAnimating(true);
   try {
-    await flyOnLayer(cardEl, fromRect, toRect);
+    if (cardEl.parentElement === getLayer()) {
+      await flyDelta(cardEl, fromRect, toRect);
+      cardEl.remove();
+      gsap.set(cardEl, { clearProps: 'all' });
+    } else {
+      await flyOnLayer(cardEl, fromRect, toRect);
+    }
   } finally {
     setAnimating(false);
   }
@@ -243,7 +281,13 @@ export async function animateCardToTarget(cardEl, fromRect, toRect) {
   }
   setAnimating(true);
   try {
-    await flyOnLayer(cardEl, fromRect, toRect);
+    if (cardEl.parentElement === getLayer()) {
+      await flyDelta(cardEl, fromRect, toRect);
+      cardEl.remove();
+      gsap.set(cardEl, { clearProps: 'all' });
+    } else {
+      await flyOnLayer(cardEl, fromRect, toRect);
+    }
   } finally {
     setAnimating(false);
   }
@@ -254,19 +298,23 @@ export async function animateWasteToStockUndo(cardEl, card, fromRect, toRect) {
     return;
   }
 
-  mountOnLayer(cardEl, fromRect);
+  mountFlyingCard(cardEl, fromRect);
   setAnimating(true);
 
   try {
-    gsap.set(cardEl, { rotateY: 0, transformPerspective: 600 });
-    const dx = toRect.left - fromRect.left;
-    const dy = toRect.top - fromRect.top;
+    gsap.set(cardEl, {
+      rotateY: 0,
+      transformPerspective: 600,
+      transformOrigin: '50% 50%',
+      x: 0,
+      y: 0,
+    });
 
     await gsap.to(cardEl, { rotateY: 90, duration: 0.09, ease: 'power1.in' });
     cardEl.style.backgroundImage = `url("${cardImagePath({ ...card, faceUp: false })}")`;
     cardEl.classList.add('face-down');
     await gsap.to(cardEl, { rotateY: 0, duration: 0.09, ease: 'power1.out' });
-    await gsap.to(cardEl, { x: dx, y: dy, duration: DURATION, ease: EASE });
+    await flyDelta(cardEl, fromRect, toRect);
   } finally {
     cardEl.remove();
     gsap.set(cardEl, { clearProps: 'all' });

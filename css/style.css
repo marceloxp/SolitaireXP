@@ -423,7 +423,6 @@ html.has-saved-game #btn-continue {
   inset: 0;
   pointer-events: none;
   z-index: 2000;
-  perspective: 800px;
 }
 
 .rotate-overlay {
