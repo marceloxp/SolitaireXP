@@ -65,6 +65,7 @@ function boot() {
   removeLegacyBestScore();
   lockOrientation();
   initPwaInstall();
+  exposeDevTools();
   const saved = loadGame();
   const continueBtn = document.querySelector('#btn-continue');
   continueBtn.hidden = !(saved?.gameState && !saved.gameState.won);
@@ -532,8 +533,44 @@ async function checkWin() {
   updateHud(hud, scoreState, gameState);
   saveGame(gameState, scoreState);
 
-  await playWinAnimation(gameRoot);
+  gameRoot.classList.add('is-winning');
+  await playWinAnimation(gameRoot, gameState);
   showWinOverlay(app, () => startNewGame());
+}
+
+const DEV_SLOT = 'solitairexp-dev';
+
+function exposeDevTools() {
+  window.__solitaire = {
+    save() {
+      localStorage.setItem(DEV_SLOT, JSON.stringify({
+        game: serializeState(gameState),
+        score: JSON.stringify(scoreState),
+      }));
+      console.info('[SolitaireXP] Saved — run __solitaire.load() to restore.');
+    },
+    load() {
+      const raw = localStorage.getItem(DEV_SLOT);
+      if (!raw) {
+        console.warn('[SolitaireXP] Nothing saved yet — run __solitaire.save() first.');
+        return;
+      }
+      const slot = JSON.parse(raw);
+      localStorage.setItem('solitairexp-game-state', slot.game);
+      localStorage.setItem('solitairexp-score-state', slot.score);
+      location.reload();
+    },
+    async previewWin() {
+      clearWinAnimation();
+      gameRoot.classList.add('is-winning');
+      await playWinAnimation(gameRoot, gameState);
+      showWinOverlay(app, () => {
+        clearWinAnimation();
+        refresh();
+      });
+    },
+  };
+  console.info('[SolitaireXP] Dev: __solitaire.save() | load() | previewWin()');
 }
 
 if ('serviceWorker' in navigator) {

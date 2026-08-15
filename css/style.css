@@ -516,6 +516,25 @@ html.has-saved-game #btn-continue {
   z-index: 3000;
 }
 
+.win-celebration-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(255, 255, 220, 0.12), transparent 55%),
+    rgba(0, 0, 0, 0.28);
+}
+
+#game-root.is-winning .card {
+  visibility: hidden;
+}
+
+.win-flying-card {
+  pointer-events: none;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+}
+
 .win-overlay h2 {
   margin: 0 0 8px;
   font-size: 2rem;

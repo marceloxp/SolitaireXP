@@ -22,6 +22,7 @@ Klondike (Draw-1) solitaire PWA: vanilla HTML/CSS/JS + GSAP (vendored, no build 
 - After animated moves: mount on `#drag-layer`, animate, then `refresh()` (full re-render).
 - Tableau column height: `syncTableauColumnHeights()` counts DOM cards only (not game state).
 - UI is English. About dedication names (**MarceloXP**, **Silvana**) are fixed.
+- Dev console: `__solitaire.save()` / `load()` / `previewWin()` (see `main.js`).
 
 ## Local dev
 
