@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -9,24 +9,24 @@
   <meta name="apple-mobile-web-app-title" content="SolitaireXP">
 
   <!-- Basic HTML Meta Tags -->
-  <title>SolitaireXP — Paciência Klondike grátis</title>
-  <meta name="title" content="SolitaireXP — Paciência Klondike grátis">
-  <meta name="description" content="Jogue Paciência (Klondike) de graça, direto do navegador. Instale como app, funciona 100% offline e salva seu progresso automaticamente.">
-  <meta name="keywords" content="paciência, solitaire, klondike, jogo de cartas, jogo grátis, pwa, jogo offline">
+  <title>SolitaireXP — Free Klondike Solitaire</title>
+  <meta name="title" content="SolitaireXP — Free Klondike Solitaire">
+  <meta name="description" content="Play Klondike solitaire for free in your browser. Install as an app, works 100% offline, and saves your progress automatically.">
+  <meta name="keywords" content="solitaire, klondike, card game, free game, pwa, offline game">
 
   <!-- Facebook Meta Tags -->
   <meta property="og:url" content="https://marceloxp.github.io/SolitaireXP/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="SolitaireXP — Paciência Klondike grátis">
-  <meta property="og:description" content="Jogue Paciência (Klondike) de graça, direto do navegador. Instale como app, funciona 100% offline e salva seu progresso automaticamente.">
+  <meta property="og:title" content="SolitaireXP — Free Klondike Solitaire">
+  <meta property="og:description" content="Play Klondike solitaire for free in your browser. Install as an app, works 100% offline, and saves your progress automatically.">
   <meta property="og:image" content="https://marceloxp.github.io/SolitaireXP/assets/social/banner.jpg">
 
   <!-- Twitter Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="twitter:domain" content="marceloxp.github.io">
   <meta property="twitter:url" content="https://marceloxp.github.io/SolitaireXP/">
-  <meta name="twitter:title" content="SolitaireXP — Paciência Klondike grátis">
-  <meta name="twitter:description" content="Jogue Paciência (Klondike) de graça, direto do navegador. Instale como app, funciona 100% offline e salva seu progresso automaticamente.">
+  <meta name="twitter:title" content="SolitaireXP — Free Klondike Solitaire">
+  <meta name="twitter:description" content="Play Klondike solitaire for free in your browser. Install as an app, works 100% offline, and saves your progress automatically.">
   <meta name="twitter:image" content="https://marceloxp.github.io/SolitaireXP/assets/social/banner.jpg">
 
   <link rel="manifest" href="manifest.json">
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/cards.css">
   <style>
-    /* Crítico: splash visível antes do CSS externo carregar */
+    /* Critical: show splash before external CSS loads */
     #splash {
       position: fixed;
       inset: 0;
@@ -68,7 +68,7 @@
   </script>
 </head>
 <body data-screen="menu" class="is-booting">
-  <div id="splash" role="status" aria-live="polite" aria-label="Carregando SolitaireXP">
+  <div id="splash" role="status" aria-live="polite" aria-label="Loading SolitaireXP">
     <div class="splash-content">
       <img src="assets/icons/icon-192.png" alt="" class="splash-logo" width="192" height="192">
       <p class="splash-title">SolitaireXP</p>
@@ -79,23 +79,23 @@
     <section class="screen-menu">
       <div class="menu-card">
         <h1><img src="assets/icons/icon-192.png" alt="SolitaireXP" class="menu-logo"></h1>
-        <p>Paciência Klondike</p>
+        <p>Klondike Solitaire</p>
         <div class="menu-actions">
           <button id="btn-new-game" type="button">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            <span>Novo jogo</span>
+            <span>New game</span>
           </button>
           <button id="btn-continue" type="button" hidden>
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span>Continuar</span>
+            <span>Continue</span>
           </button>
           <button id="btn-install" type="button" hidden>
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Instalar app</span>
+            <span>Install app</span>
           </button>
           <button id="btn-about" type="button" class="btn-about">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span>Sobre</span>
+            <span>About</span>
           </button>
         </div>
       </div>
@@ -106,15 +106,15 @@
       <div id="hud">
         <div class="stat">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          <span>Pontos</span><strong data-score>0</strong>
+          <span>Score</span><strong data-score>0</strong>
         </div>
         <div class="stat">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-          <span>Jogadas</span><strong data-moves>0</strong>
+          <span>Moves</span><strong data-moves>0</strong>
         </div>
         <div class="stat">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          <span>Tempo</span><strong data-time>00:00</strong>
+          <span>Time</span><strong data-time>00:00</strong>
         </div>
       </div>
 
@@ -123,15 +123,15 @@
       <div class="toolbar">
         <button id="btn-new-from-game" type="button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-          <span>Novo jogo</span>
+          <span>New game</span>
         </button>
         <button id="btn-auto-complete" type="button" hidden>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
-          <span>Finalizar</span>
+          <span>Finish</span>
         </button>
         <button id="btn-undo" type="button" hidden>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>
-          <span>Desfazer</span>
+          <span>Undo</span>
         </button>
       </div>
     </section>
@@ -141,35 +141,35 @@
 
   <div id="rotate-overlay" class="rotate-overlay">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M12 18h.01"></path><path d="M4 8v-.5A2.5 2.5 0 0 1 6.5 5H8"></path><path d="M2 6l3 3-3 3"></path></svg>
-    <p>Gire seu aparelho de volta pro modo retrato pra continuar jogando.</p>
+    <p>Rotate your device back to portrait to keep playing.</p>
   </div>
 
   <div id="about-overlay" class="about-overlay" hidden>
     <div class="about-box">
-      <button type="button" id="btn-about-close" class="about-close" aria-label="Fechar">
+      <button type="button" id="btn-about-close" class="about-close" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
 
       <img src="assets/icons/icon-192.png" alt="" class="about-logo">
 
-      <p class="about-dedication">Feito pelo <strong>MarceloXP</strong> <span class="about-heart" aria-hidden="true">❤️</span> para <strong>Silvana</strong></p>
+      <p class="about-dedication">Made by <strong>MarceloXP</strong> <span class="about-heart" aria-hidden="true">❤️</span> for <strong>Silvana</strong></p>
 
       <ul class="about-credits">
         <li>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-          <span>Cartas: <em>Casino Card Pack</em>, por Moxica (playground)</span>
+          <span>Cards: <em>Casino Card Pack</em> by Moxica (playground)</span>
         </li>
         <li>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-          <span>Código: escrito em parceria com Claude Sonnet 5, rodando no <em>Cursor</em></span>
+          <span>Code: written in partnership with Claude Sonnet 5 on <em>Cursor</em></span>
         </li>
         <li>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          <span><a class="about-link" href="https://github.com/marceloxp/SolitaireXP" target="_blank" rel="noopener noreferrer">Ver código no GitHub</a></span>
+          <span><a class="about-link" href="https://github.com/marceloxp/SolitaireXP" target="_blank" rel="noopener noreferrer">View source on GitHub</a></span>
         </li>
       </ul>
 
-      <button type="button" id="btn-about-footer-close" class="about-footer-close">Fechar</button>
+      <button type="button" id="btn-about-footer-close" class="about-footer-close">Close</button>
     </div>
   </div>
 
