@@ -67,6 +67,10 @@ body {
     calc(var(--body-pad-x) + var(--safe-right))
     calc(12px + var(--safe-bottom))
     calc(var(--body-pad-x) + var(--safe-left));
+  /* Evita seleção acidental de texto (HUD, toolbar, etc.) ao dar duplo
+     clique/toque rápido nas cartas. */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 button {
@@ -742,6 +746,8 @@ html.has-saved-game #btn-continue {
   color: var(--text);
   text-decoration: underline;
   text-underline-offset: 2px;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .about-link:hover,
@@ -764,5 +770,20 @@ html.has-saved-game #btn-continue {
 @media (min-width: 760px) {
   #hud .stat {
     font-size: 1rem;
+  }
+
+  /* No desktop o grid 1fr/auto/1fr espalhava New game e Undo até as bordas
+     da viewport; agrupa os botões no centro, alinhado ao tabuleiro. */
+  .toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  #btn-new-from-game,
+  #btn-auto-complete,
+  #btn-undo {
+    grid-column: unset;
+    justify-self: unset;
   }
 }
