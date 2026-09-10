@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solitairexp-v44';
+const CACHE_NAME = 'solitairexp-v45';
 
 const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANK_LABELS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
@@ -22,6 +22,7 @@ const ASSETS = [
   './js/drag-handler.js',
   './js/win-animation.js',
   './js/pwa-install.js',
+  './js/pwa-update.js',
   './js/splash.js',
   './js/move-animation.js',
   './js/main.js',
@@ -35,9 +36,13 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()),
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {

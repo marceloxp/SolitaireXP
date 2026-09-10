@@ -29,6 +29,7 @@ import {
 } from './render.js';
 import { clearWinAnimation, playWinAnimation, showWinOverlay } from './win-animation.js';
 import { initPwaInstall } from './pwa-install.js';
+import { initPwaUpdate } from './pwa-update.js';
 import { initSplash } from './splash.js';
 import { setTheme } from './themes.js';
 import {
@@ -89,6 +90,7 @@ function boot() {
   removeLegacyBestScore();
   lockOrientation();
   initPwaInstall();
+  initPwaUpdate();
   exposeDevTools();
   updateMenuContinueButton();
   previewAllFooterButtons();
@@ -612,20 +614,6 @@ function exposeDevTools() {
     },
   };
   console.info('[SolitaireXP] Dev: __solitaire.save() | load() | previewWin()');
-}
-
-function shouldRegisterServiceWorker() {
-  const { hostname, protocol } = window.location;
-  if (protocol === 'https:') {
-    return true;
-  }
-  return hostname === 'localhost' || hostname === '127.0.0.1';
-}
-
-if ('serviceWorker' in navigator && shouldRegisterServiceWorker()) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-  });
 }
 
 async function start() {
