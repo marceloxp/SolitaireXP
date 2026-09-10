@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solitairexp-v37';
+const CACHE_NAME = 'solitairexp-v44';
 
 const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANK_LABELS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
@@ -13,6 +13,7 @@ const ASSETS = [
   './js/vendor/gsap.min.js',
   './js/vendor/Draggable.min.js',
   './js/card.js',
+  './js/themes.js',
   './js/deck.js',
   './js/game-state.js',
   './js/score.js',
@@ -24,9 +25,12 @@ const ASSETS = [
   './js/splash.js',
   './js/move-animation.js',
   './js/main.js',
+  './assets/logo.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/cards/card_back.png',
+  './assets/themes/alice/card_back.jpg',
+  './assets/themes/alice/selector.jpg',
   ...CARD_ASSETS,
 ];
 

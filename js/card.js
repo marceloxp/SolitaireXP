@@ -1,3 +1,5 @@
+import { getActiveTheme } from './themes.js';
+
 export const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
 export const RED_SUITS = new Set(['hearts', 'diamonds']);
 
@@ -28,7 +30,7 @@ export function createCard(suit, rank, faceUp = false) {
 
 export function cardImagePath(card) {
   if (!card.faceUp) {
-    return 'assets/cards/card_back.png';
+    return getActiveTheme().cardBack;
   }
   return `assets/cards/card_${card.suit}_${rankLabel(card.rank)}.png`;
 }

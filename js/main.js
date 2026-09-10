@@ -30,6 +30,7 @@ import {
 import { clearWinAnimation, playWinAnimation, showWinOverlay } from './win-animation.js';
 import { initPwaInstall } from './pwa-install.js';
 import { initSplash } from './splash.js';
+import { setTheme } from './themes.js';
 import {
   animateAutoCompleteMoves,
   animateCardToTarget,
@@ -53,6 +54,19 @@ const dragLayer = document.querySelector('#drag-layer');
 
 const MAX_UNDO = 3;
 
+// TEMP: preview all footer/menu action buttons — set to true to force-show hidden buttons
+const PREVIEW_ALL_FOOTER_BUTTONS = false;
+
+function previewAllFooterButtons() {
+  if (!PREVIEW_ALL_FOOTER_BUTTONS) {
+    return;
+  }
+  document.querySelector('#btn-continue').hidden = false;
+  document.querySelector('#btn-install').hidden = false;
+  document.querySelector('#btn-auto-complete').hidden = false;
+  document.querySelector('#btn-undo').hidden = false;
+}
+
 let gameState = dealNewGame();
 let scoreState = createScoreState();
 let detachDrag = null;
@@ -60,15 +74,24 @@ let timerId = null;
 let won = false;
 let history = [];
 
+function updateMenuContinueButton() {
+  const continueBtn = document.querySelector('#btn-continue');
+  if (!continueBtn) {
+    return;
+  }
+  const saved = loadGame();
+  continueBtn.hidden = !(saved?.gameState && !saved.gameState.won);
+  previewAllFooterButtons();
+}
+
 function boot() {
   bindMenu();
   removeLegacyBestScore();
   lockOrientation();
   initPwaInstall();
   exposeDevTools();
-  const saved = loadGame();
-  const continueBtn = document.querySelector('#btn-continue');
-  continueBtn.hidden = !(saved?.gameState && !saved.gameState.won);
+  updateMenuContinueButton();
+  previewAllFooterButtons();
   showScreen('menu');
 }
 
@@ -89,7 +112,16 @@ function removeLegacyBestScore() {
   }
 }
 
+function bindThemePicker() {
+  document.querySelectorAll('.theme-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setTheme(btn.dataset.themeId);
+    });
+  });
+}
+
 function bindMenu() {
+  bindThemePicker();
   document.querySelector('#btn-new-game').addEventListener('click', () => startNewGame());
   document.querySelector('#btn-continue').addEventListener('click', () => {
     const saved = loadGame();
@@ -102,6 +134,7 @@ function bindMenu() {
       startTimer();
     }
   });
+  document.querySelector('#btn-home').addEventListener('click', () => goHome());
   document.querySelector('#btn-new-from-game').addEventListener('click', () => {
     confirmAction('Start a new game? Current progress will be lost.', () => startNewGame());
   });
@@ -164,6 +197,13 @@ function showScreen(name) {
   document.body.dataset.screen = name;
 }
 
+function goHome() {
+  stopTimer();
+  saveGame(gameState, scoreState);
+  showScreen('menu');
+  updateMenuContinueButton();
+}
+
 function startNewGame() {
   stopTimer();
   clearWinAnimation();
@@ -209,6 +249,7 @@ async function refresh() {
   updateHud(hud, scoreState, gameState);
   updateAutoCompleteButton();
   updateUndoButton();
+  previewAllFooterButtons();
   saveGame(gameState, scoreState);
 
   detachDrag = attachDragHandlers({
@@ -573,15 +614,29 @@ function exposeDevTools() {
   console.info('[SolitaireXP] Dev: __solitaire.save() | load() | previewWin()');
 }
 
-if ('serviceWorker' in navigator) {
+function shouldRegisterServiceWorker() {
+  const { hostname, protocol } = window.location;
+  if (protocol === 'https:') {
+    return true;
+  }
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
+if ('serviceWorker' in navigator && shouldRegisterServiceWorker()) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js').catch(() => {});
   });
 }
 
 async function start() {
-  await initSplash();
-  boot();
+  try {
+    await initSplash();
+    boot();
+  } catch (error) {
+    console.error('[SolitaireXP] Boot failed:', error);
+    document.querySelector('#splash')?.remove();
+    document.body.classList.remove('is-booting');
+  }
 }
 
 start();

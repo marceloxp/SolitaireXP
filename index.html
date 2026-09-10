@@ -32,8 +32,8 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=1.0.7">
-  <link rel="stylesheet" href="css/cards.css?v=1.0.7">
+  <link rel="stylesheet" href="css/style.css?v=1.0.9">
+  <link rel="stylesheet" href="css/cards.css?v=1.0.9">
   <style>
     /* Critical: show splash before external CSS loads */
     #splash {
@@ -46,6 +46,10 @@
       background-color: #0a4f2a;
     }
 
+    html[data-theme="alice"] #splash {
+      background-color: #6b2d4d;
+    }
+
     body.is-booting {
       overflow: hidden;
     }
@@ -53,6 +57,19 @@
   <script>
     (function () {
       try {
+        var THEME_COLORS = { default: '#0f6b3a', alice: '#9e4570' };
+        var theme = localStorage.getItem('solitairexp-theme') || 'default';
+        if (!THEME_COLORS[theme]) {
+          theme = 'default';
+        }
+        if (theme !== 'default') {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute('content', THEME_COLORS[theme]);
+        }
+
         var raw = localStorage.getItem('solitairexp-game-state');
         if (!raw) {
           return;
@@ -70,16 +87,38 @@
 <body data-screen="menu" class="is-booting">
   <div id="splash" role="status" aria-live="polite" aria-label="Loading SolitaireXP">
     <div class="splash-content">
-      <img src="assets/icons/icon-192.png" alt="" class="splash-logo" width="192" height="192">
-      <p class="splash-title">SolitaireXP</p>
+      <img src="assets/logo.png" alt="SolitaireXP" class="splash-logo" width="640" height="640">
     </div>
   </div>
 
   <div id="app">
     <section class="screen-menu">
       <div class="menu-card">
-        <h1><img src="assets/icons/icon-192.png" alt="SolitaireXP" class="menu-logo"></h1>
-        <p>Klondike Solitaire</p>
+        <h1><img src="assets/logo.png" alt="SolitaireXP" class="menu-logo" width="640" height="640"></h1>
+        <div class="theme-picker" role="group" aria-label="Theme">
+          <button type="button" class="theme-option" data-theme-id="default" aria-pressed="false">
+            <span class="theme-swatch theme-swatch--default" aria-hidden="true"></span>
+            <span>Classic</span>
+          </button>
+          <button type="button" class="theme-option" data-theme-id="alice" aria-pressed="false">
+            <span class="theme-swatch theme-swatch--alice" aria-hidden="true"></span>
+            <span>Alice</span>
+          </button>
+        </div>
+        <script>
+          (function () {
+            try {
+              var theme = localStorage.getItem('solitairexp-theme') || 'default';
+              document.querySelectorAll('.theme-option').forEach(function (btn) {
+                var selected = btn.getAttribute('data-theme-id') === theme;
+                btn.classList.toggle('is-active', selected);
+                btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+              });
+            } catch (e) {
+              // best-effort
+            }
+          })();
+        </script>
         <div class="menu-actions">
           <button id="btn-new-game" type="button">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
@@ -99,7 +138,7 @@
           </button>
         </div>
       </div>
-      <p class="app-version">v1.0.7</p>
+      <p class="app-version">v1.0.9</p>
     </section>
 
     <section class="screen-game">
@@ -121,9 +160,13 @@
       <div id="game-root"></div>
 
       <div class="toolbar">
+        <button id="btn-home" type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span>Home</span>
+        </button>
         <button id="btn-new-from-game" type="button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-          <span>New game</span>
+          <span>New</span>
         </button>
         <button id="btn-auto-complete" type="button" hidden>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
@@ -150,7 +193,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
 
-      <img src="assets/icons/icon-192.png" alt="" class="about-logo">
+      <img src="assets/logo.png" alt="" class="about-logo" width="640" height="640">
 
       <p class="about-dedication">Made by <strong>MarceloXP</strong> <span class="about-heart" aria-hidden="true">❤️</span> for <strong>Silvana</strong></p>
 
@@ -175,6 +218,6 @@
 
   <script src="js/vendor/gsap.min.js"></script>
   <script src="js/vendor/Draggable.min.js"></script>
-  <script type="module" src="js/main.js?v=1.0.7"></script>
+  <script type="module" src="js/main.js?v=1.0.9"></script>
 </body>
 </html>
