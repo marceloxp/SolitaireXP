@@ -261,13 +261,26 @@ export async function animateStockToWaste(cardEl, drawnCard, fromRect, toRect) {
       y: 0,
     });
     const faceUpUrl = cardImagePath(drawnCard);
+    const flipHalf = 0.09;
+    const nudgeX = Math.round(fromRect.width * 0.14);
+    const dx = toRect.left - fromRect.left;
+    const dy = toRect.top - fromRect.top;
 
-    await gsap.to(cardEl, { rotateY: 90, duration: 0.09, ease: 'power1.in' });
-    cardEl.style.backgroundImage = `url("${faceUpUrl}")`;
-    cardEl.classList.remove('face-down');
-    await gsap.to(cardEl, { rotateY: 0, duration: 0.09, ease: 'power1.out' });
+    const tl = gsap.timeline();
+    tl.to(cardEl, {
+      rotateY: 90,
+      x: nudgeX,
+      duration: flipHalf,
+      ease: 'power1.in',
+    })
+      .call(() => {
+        cardEl.style.backgroundImage = `url("${faceUpUrl}")`;
+        cardEl.classList.remove('face-down');
+      })
+      .to(cardEl, { rotateY: 0, duration: flipHalf, ease: 'power1.out' })
+      .to(cardEl, { x: dx, y: dy, duration: DURATION, ease: EASE });
 
-    await flyDelta(cardEl, fromRect, toRect);
+    await tl;
   } finally {
     cardEl.remove();
     gsap.set(cardEl, { clearProps: 'all' });
