@@ -1,6 +1,11 @@
 import { cardImagePath } from './card.js';
 import { locateCard, PILE } from './game-state.js';
-import { TABLEAU_OFFSET, syncTableauColumnHeights } from './render.js';
+import {
+  TABLEAU_OFFSET,
+  syncFoundationPileDom,
+  syncTableauColumnHeights,
+  syncWastePileDom,
+} from './render.js';
 
 const DURATION = 0.22;
 const EASE = 'power2.out';
@@ -196,6 +201,7 @@ async function flyManyOnLayer(flights, options = {}) {
   }
   try {
     mountFlightsOnLayer(flights);
+    options.onMounted?.();
     const stagger = options.stagger ?? 0;
     const tweens = flights.map(({ cardEl, fromRect, toRect }, index) => {
       return flyDelta(cardEl, fromRect, toRect, index * stagger);
@@ -385,6 +391,25 @@ export function detectUndoMove(current, restored) {
   return { type: 'generic' };
 }
 
+function revealUndonePileTops(state, cardEls) {
+  let syncWaste = false;
+  const foundationIndexes = new Set();
+  cardEls.forEach((cardEl) => {
+    if (cardEl.dataset.pile === PILE.WASTE) {
+      syncWaste = true;
+    }
+    if (cardEl.dataset.pile === PILE.FOUNDATION && cardEl.dataset.index !== undefined) {
+      foundationIndexes.add(Number(cardEl.dataset.index));
+    }
+  });
+  if (syncWaste) {
+    syncWastePileDom(state);
+  }
+  foundationIndexes.forEach((index) => {
+    syncFoundationPileDom(state, index);
+  });
+}
+
 export async function playUndoAnimation(undoMove, before, restoredState) {
   if (prefersReducedMotion()) {
     return;
@@ -399,7 +424,19 @@ export async function playUndoAnimation(undoMove, before, restoredState) {
     }
     const fromRect = cardEl.getBoundingClientRect();
     const toRect = getPlayTargetRect(restoredState, PILE.WASTE, 0, undoMove.cardId);
-    await animateCardToTarget(cardEl, fromRect, toRect);
+    if (!toRect) {
+      return;
+    }
+    setAnimating(true);
+    try {
+      mountFlyingCard(cardEl, fromRect);
+      revealUndonePileTops(restoredState, [cardEl]);
+      await flyDelta(cardEl, fromRect, toRect);
+      cardEl.remove();
+      gsap.set(cardEl, { clearProps: 'all' });
+    } finally {
+      setAnimating(false);
+    }
     return;
   }
 
@@ -433,7 +470,9 @@ export async function playUndoAnimation(undoMove, before, restoredState) {
     flights.push({ cardEl: el, fromRect: el.getBoundingClientRect(), toRect });
   }
 
-  await flyManyOnLayer(flights);
+  await flyManyOnLayer(flights, {
+    onMounted: () => revealUndonePileTops(restoredState, flights.map(({ cardEl }) => cardEl)),
+  });
 }
 
 export function captureUndoContext() {

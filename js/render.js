@@ -177,12 +177,29 @@ export function syncWastePileDom(state) {
   if (!waste) {
     return;
   }
-  waste.querySelector('.card')?.remove();
+  waste.querySelectorAll('.card').forEach((el) => el.remove());
   if (state.waste.length) {
     const top = state.waste[state.waste.length - 1];
     waste.appendChild(createCardElement(top, {
       pile: PILE.WASTE,
       index: 0,
+      draggable: true,
+    }));
+  }
+}
+
+export function syncFoundationPileDom(state, foundationIndex) {
+  const pile = document.querySelector(`.pile-foundation[data-index="${foundationIndex}"]`);
+  if (!pile) {
+    return;
+  }
+  pile.querySelectorAll('.card').forEach((el) => el.remove());
+  const cards = state.foundations[foundationIndex];
+  if (cards.length) {
+    const top = cards[cards.length - 1];
+    pile.appendChild(createCardElement(top, {
+      pile: PILE.FOUNDATION,
+      index: foundationIndex,
       draggable: true,
     }));
   }

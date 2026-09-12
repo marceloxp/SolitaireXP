@@ -22,6 +22,7 @@ import {
   getCardElements,
   getDropTargets,
   syncGameDom,
+  syncFoundationPileDom,
   syncTableauColumnHeights,
   syncStockPileDom,
   syncWastePileDom,
@@ -385,6 +386,8 @@ async function handleDropAttempt({ cardId, source, target, groupEls }) {
 
   if (source.pile === PILE.WASTE) {
     syncWastePileDom(gameState);
+  } else if (source.pile === PILE.FOUNDATION) {
+    syncFoundationPileDom(gameState, source.index);
   }
 
   syncTableauColumnHeights();

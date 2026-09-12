@@ -127,12 +127,13 @@ function createDraggable(el, {
       );
 
       const finish = (accepted) => {
-        peekEl?.remove();
         if (!accepted) {
+          peekEl?.remove();
           restoreGroup(groupEls, startPositions, dragGroup);
         } else {
           dragGroup?.remove();
         }
+        peekEl = null;
         groupEls.forEach((node) => node.classList.remove('dragging'));
         startPositions.clear();
         dragGroup = null;
