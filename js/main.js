@@ -651,12 +651,14 @@ function exposeDevTools() {
 
 async function start() {
   try {
-    await initSplash();
     boot();
+    await initSplash();
   } catch (error) {
     console.error('[SolitaireXP] Boot failed:', error);
     document.querySelector('#splash')?.remove();
-    document.body.classList.remove('is-booting');
+    document.body.classList.remove('is-booting', 'is-revealing');
+    app.removeAttribute('inert');
+    app.removeAttribute('aria-hidden');
   }
 }
 

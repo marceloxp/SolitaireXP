@@ -86,6 +86,26 @@ button {
 #app {
   max-width: 980px;
   margin: 0 auto;
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body.is-booting #app {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.is-booting.is-revealing #app {
+  opacity: 1;
+}
+
+body.is-booting .menu-card {
+  transform: translateY(10px);
+}
+
+body.is-booting.is-revealing .menu-card {
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 #splash {
@@ -95,7 +115,7 @@ button {
     repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.035) 0, rgba(0, 0, 0, 0.035) 1px, transparent 1px, transparent 4px),
     radial-gradient(circle at top, var(--felt-light) 0%, var(--felt) 45%, var(--felt-dark) 100%);
   opacity: 1;
-  transition: opacity 0.45s ease;
+  transition: opacity 0.35s ease;
 }
 
 #splash.is-hiding {
@@ -109,11 +129,7 @@ button {
   align-items: center;
   gap: 14px;
   text-align: center;
-  animation: splash-enter 0.55s ease-out both;
-}
-
-#splash.is-hiding .splash-content {
-  animation: splash-exit 0.45s ease-in forwards;
+  animation: splash-enter 0.35s ease-out both;
 }
 
 .splash-logo {
@@ -135,15 +151,17 @@ button {
   }
 }
 
-@keyframes splash-exit {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+@media (prefers-reduced-motion: reduce) {
+  #splash,
+  .splash-content,
+  #app,
+  body.is-booting.is-revealing .menu-card {
+    animation-duration: 0.01ms;
+    transition-duration: 0.01ms;
   }
 
-  to {
-    opacity: 0;
-    transform: scale(0.94) translateY(-6px);
+  body.is-booting .menu-card {
+    transform: none;
   }
 }
 

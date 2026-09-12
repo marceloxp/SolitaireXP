@@ -32,8 +32,8 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" type="image/png">
-  <link rel="stylesheet" href="css/style.css?v=1.0.15">
-  <link rel="stylesheet" href="css/cards.css?v=1.0.15">
+  <link rel="stylesheet" href="css/style.css?v=1.0.16">
+  <link rel="stylesheet" href="css/cards.css?v=1.0.16">
   <script src="js/theme-palette.js"></script>
   <script>
     (function () {
@@ -71,6 +71,11 @@
     body.is-booting {
       overflow: hidden;
     }
+
+    body.is-booting #app {
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body data-screen="menu" class="is-booting">
@@ -80,7 +85,7 @@
     </div>
   </div>
 
-  <div id="app">
+  <div id="app" inert aria-hidden="true">
     <section class="screen-menu">
       <div class="menu-card">
         <h1><img src="assets/logo.png" alt="SolitaireXP" class="menu-logo" width="640" height="640"></h1>
@@ -127,7 +132,7 @@
           </button>
         </div>
       </div>
-      <p class="app-version">v1.0.15</p>
+      <p class="app-version">v1.0.16</p>
     </section>
 
     <section class="screen-game">
@@ -207,6 +212,6 @@
 
   <script src="js/vendor/gsap.min.js"></script>
   <script src="js/vendor/Draggable.min.js"></script>
-  <script type="module" src="js/main.js?v=1.0.15"></script>
+  <script type="module" src="js/main.js?v=1.0.16"></script>
 </body>
 </html>
