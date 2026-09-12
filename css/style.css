@@ -161,15 +161,24 @@ button {
   padding-bottom: calc(var(--toolbar-space) + var(--safe-bottom));
 }
 
-body[data-screen="menu"] .screen-menu,
 body[data-screen="game"] .screen-game {
   display: block;
 }
 
+body[data-screen="menu"] .screen-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 24px);
+}
+
 .menu-card {
-  margin: 12vh auto 0;
+  margin: 0 auto;
+  width: 100%;
   max-width: 420px;
-  padding: 28px;
+  padding: clamp(16px, 4vw, 28px);
   border-radius: 16px;
   text-align: center;
   backdrop-filter: blur(4px);
