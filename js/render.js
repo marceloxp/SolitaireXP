@@ -28,6 +28,87 @@ export function renderGame(root, state, handlers = {}) {
   return root;
 }
 
+export function syncGameDom(root, state, handlers = {}) {
+  const board = root.querySelector('.board');
+  if (!board) {
+    return renderGame(root, state, handlers);
+  }
+
+  const reusable = new Map();
+  root.querySelectorAll('.card').forEach((el) => {
+    reusable.set(el.dataset.cardId, el);
+  });
+  const visible = new Set();
+
+  const mountCard = (container, card, options) => {
+    let el = reusable.get(card.id);
+    if (el) {
+      updateCardElement(el, card, options);
+    } else {
+      el = createCardElement(card, options);
+    }
+    container.appendChild(el);
+    visible.add(el);
+  };
+
+  const stock = root.querySelector('.pile-stock');
+  [...stock.childNodes]
+    .filter((node) => node.nodeType === Node.TEXT_NODE)
+    .forEach((node) => node.remove());
+  stock.classList.toggle('empty', !state.stock.length);
+  if (state.stock.length) {
+    mountCard(stock, state.stock[state.stock.length - 1], {
+      pile: PILE.STOCK,
+      draggable: false,
+      faceUp: false,
+    });
+  }
+
+  const waste = root.querySelector('.pile-waste');
+  if (state.waste.length) {
+    mountCard(waste, state.waste[state.waste.length - 1], {
+      pile: PILE.WASTE,
+      index: 0,
+      draggable: true,
+    });
+  }
+
+  root.querySelectorAll('.pile-foundation').forEach((pile, index) => {
+    const cards = state.foundations[index];
+    if (cards.length) {
+      mountCard(pile, cards[cards.length - 1], {
+        pile: PILE.FOUNDATION,
+        index,
+        draggable: true,
+      });
+    }
+  });
+
+  root.querySelectorAll('.pile-tableau').forEach((column, columnIndex) => {
+    state.tableau[columnIndex].forEach((card, cardIndex) => {
+      mountCard(column, card, {
+        pile: PILE.TABLEAU,
+        index: columnIndex,
+        cardIndex,
+        draggable: card.faceUp,
+        offset: cardIndex * TABLEAU_OFFSET,
+      });
+    });
+  });
+
+  reusable.forEach((el) => {
+    if (!visible.has(el)) {
+      el.remove();
+    }
+  });
+
+  if (!state.stock.length) {
+    stock.textContent = '↻';
+  }
+  syncTableauColumnHeights();
+  return root;
+}
+
 function createSpacer() {
   const el = document.createElement('div');
   el.className = 'top-spacer';
@@ -179,6 +260,11 @@ export function syncTableauColumnHeights() {
 
 export function createCardElement(card, options) {
   const el = document.createElement('div');
+  updateCardElement(el, card, options);
+  return el;
+}
+
+function updateCardElement(el, card, options) {
   el.className = 'card';
   if (!card.faceUp && options.pile !== PILE.STOCK) {
     el.classList.add('face-down');
@@ -187,19 +273,24 @@ export function createCardElement(card, options) {
   el.dataset.pile = options.pile;
   if (options.index !== undefined) {
     el.dataset.index = String(options.index);
+  } else {
+    delete el.dataset.index;
   }
   if (options.cardIndex !== undefined) {
     el.dataset.cardIndex = String(options.cardIndex);
+  } else {
+    delete el.dataset.cardIndex;
   }
   el.style.backgroundImage = `url("${cardImagePath(card)}")`;
   el.style.zIndex = String(10 + (options.cardIndex ?? 0));
   if (options.offset) {
     el.style.setProperty('--stack-offset', `${options.offset}px`);
+  } else {
+    el.style.removeProperty('--stack-offset');
   }
   if (options.draggable) {
     el.classList.add('draggable');
   }
-  return el;
 }
 
 export function updateHud(hud, scoreState, gameState) {

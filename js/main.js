@@ -11,7 +11,7 @@ import {
   locateCard,
   serializeState,
 } from './game-state.js';
-import { attachDragHandlers, getTableauGroupElements } from './drag-handler.js';
+import { createDragHandlerManager, getTableauGroupElements } from './drag-handler.js';
 import {
   createScoreState,
   registerMove,
@@ -21,7 +21,7 @@ import { clearSavedGame, loadGame, saveGame } from './storage.js';
 import {
   getCardElements,
   getDropTargets,
-  renderGame,
+  syncGameDom,
   syncTableauColumnHeights,
   syncStockPileDom,
   syncWastePileDom,
@@ -70,7 +70,7 @@ function previewAllFooterButtons() {
 
 let gameState = dealNewGame();
 let scoreState = createScoreState();
-let detachDrag = null;
+let dragManager = null;
 let timerId = null;
 let won = false;
 let history = [];
@@ -239,13 +239,9 @@ function stopTimer() {
 }
 
 async function refresh() {
-  if (detachDrag) {
-    detachDrag();
-    detachDrag = null;
-  }
   dragLayer.innerHTML = '';
 
-  renderGame(gameRoot, gameState, {
+  syncGameDom(gameRoot, gameState, {
     onStockClick: handleStockClick,
   });
   updateHud(hud, scoreState, gameState);
@@ -254,13 +250,16 @@ async function refresh() {
   previewAllFooterButtons();
   saveGame(gameState, scoreState);
 
-  detachDrag = attachDragHandlers({
-    gameState,
-    getDropTargets,
-    getCardElements,
-    onDropAttempt: handleDropAttempt,
-    onCardClick: handleCardClick,
-  });
+  if (!dragManager) {
+    dragManager = createDragHandlerManager({
+      getGameState: () => gameState,
+      getDropTargets,
+      getCardElements,
+      onDropAttempt: handleDropAttempt,
+      onCardClick: handleCardClick,
+    });
+  }
+  dragManager.sync();
 }
 
 function snapshotState() {
@@ -292,11 +291,6 @@ async function handleUndo() {
 
   gameState = snapshot.gameState;
   scoreState = snapshot.scoreState;
-
-  if (detachDrag) {
-    detachDrag();
-    detachDrag = null;
-  }
 
   if (undoMove.type === 'stock-draw' && before.wasteCardEl) {
     const fromRect = before.wasteCardEl.getBoundingClientRect();
@@ -339,11 +333,6 @@ async function handleStockClick() {
 
     pushHistory(snapshot);
     const drawnCard = gameState.waste[gameState.waste.length - 1];
-
-    if (detachDrag) {
-      detachDrag();
-      detachDrag = null;
-    }
 
     mountFlyingCard(stockCardEl, fromRect);
     syncStockPileDom(gameState);
@@ -392,11 +381,6 @@ async function handleDropAttempt({ cardId, source, target, groupEls }) {
   );
   if (result.flipped) {
     registerMove(scoreState, 'reveal-tableau');
-  }
-
-  if (detachDrag) {
-    detachDrag();
-    detachDrag = null;
   }
 
   if (source.pile === PILE.WASTE) {
@@ -448,11 +432,6 @@ async function finishClickMove({
   registerMove(scoreState, scoreType);
   if (flipped) {
     registerMove(scoreState, 'reveal-tableau');
-  }
-
-  if (detachDrag) {
-    detachDrag();
-    detachDrag = null;
   }
 
   if (fromPile === PILE.WASTE) {
@@ -554,11 +533,6 @@ async function runAutoComplete() {
     registerMove(scoreState, 'tableau-to-foundation');
   });
   pushHistory(snapshot);
-
-  if (detachDrag) {
-    detachDrag();
-    detachDrag = null;
-  }
 
   syncTableauColumnHeights();
   await animateAutoCompleteMoves(gameState, cardIds);

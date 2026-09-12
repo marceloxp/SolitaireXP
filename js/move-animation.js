@@ -22,11 +22,11 @@ function setAnimating(active) {
   getRoot()?.classList.toggle('is-animating', active);
 }
 
-function mountOnLayer(cardEl, fromRect) {
-  const layer = getLayer();
-  const layerRect = layer.getBoundingClientRect();
+function mountOnLayer(cardEl, fromRect, options = {}) {
+  const layer = options.layer ?? getLayer();
+  const layerRect = options.layerRect ?? layer.getBoundingClientRect();
   layer.appendChild(cardEl);
-  if (cardEl.dataset.pile === 'tableau') {
+  if (options.syncHeights !== false && cardEl.dataset.pile === 'tableau') {
     syncTableauColumnHeights();
   }
   gsap.set(cardEl, {
@@ -138,13 +138,14 @@ export function getGroupTargetRects(state, source, target, cardId) {
   return [];
 }
 
-function flyDelta(cardEl, fromRect, toRect) {
+function flyDelta(cardEl, fromRect, toRect, delay = 0) {
   const dx = toRect.left - fromRect.left;
   const dy = toRect.top - fromRect.top;
   gsap.set(cardEl, { x: 0, y: 0, rotateY: 0 });
   return gsap.to(cardEl, {
     x: dx,
     y: dy,
+    delay,
     duration: DURATION,
     ease: EASE,
   });
@@ -161,24 +162,55 @@ async function flyOnLayer(cardEl, fromRect, toRect) {
   gsap.set(cardEl, { clearProps: 'all' });
 }
 
-async function flyManyOnLayer(flights) {
+function mountFlightsOnLayer(flights) {
+  const layer = getLayer();
+  const pending = flights.filter(({ cardEl }) => cardEl.parentElement !== layer);
+  if (!pending.length) {
+    return;
+  }
+
+  const layerRect = layer.getBoundingClientRect();
+  let movedFromTableau = false;
+  pending.forEach(({ cardEl, fromRect }) => {
+    movedFromTableau ||= cardEl.dataset.pile === PILE.TABLEAU;
+    mountOnLayer(cardEl, fromRect, {
+      layer,
+      layerRect,
+      syncHeights: false,
+    });
+  });
+
+  if (movedFromTableau) {
+    syncTableauColumnHeights();
+  }
+}
+
+async function flyManyOnLayer(flights, options = {}) {
   if (!flights.length || prefersReducedMotion()) {
     return;
   }
 
-  setAnimating(true);
+  const manageAnimating = options.manageAnimating !== false;
+  if (manageAnimating) {
+    setAnimating(true);
+  }
   try {
-    const tweens = flights.map(({ cardEl, fromRect, toRect }) => {
-      mountFlyingCard(cardEl, fromRect);
-      return flyDelta(cardEl, fromRect, toRect);
+    mountFlightsOnLayer(flights);
+    const stagger = options.stagger ?? 0;
+    const tweens = flights.map(({ cardEl, fromRect, toRect }, index) => {
+      return flyDelta(cardEl, fromRect, toRect, index * stagger);
     });
     await Promise.all(tweens);
-    flights.forEach(({ cardEl }) => {
-      cardEl.remove();
-      gsap.set(cardEl, { clearProps: 'all' });
-    });
+    if (!options.retain) {
+      flights.forEach(({ cardEl }) => {
+        cardEl.remove();
+        gsap.set(cardEl, { clearProps: 'all' });
+      });
+    }
   } finally {
-    setAnimating(false);
+    if (manageAnimating) {
+      setAnimating(false);
+    }
   }
 }
 
@@ -400,21 +432,62 @@ export function captureUndoContext() {
 }
 
 export async function animateAutoCompleteMoves(restoredState, cardIds) {
-  const flights = [];
+  if (prefersReducedMotion()) {
+    return;
+  }
+
   const cardEls = new Map();
+  const foundationRects = new Map();
+  const retainedByFoundation = new Map();
   document.querySelectorAll('#game-root .card').forEach((el) => {
     cardEls.set(el.dataset.cardId, el);
   });
 
-  cardIds.forEach((cardId) => {
-    const el = cardEls.get(cardId);
-    const toRect = getPlayTargetRect(restoredState, PILE.FOUNDATION,
-      locateCard(restoredState, cardId)?.index ?? 0, cardId);
-    if (!el || !toRect) {
-      return;
-    }
-    flights.push({ cardEl: el, fromRect: el.getBoundingClientRect(), toRect });
-  });
+  const batchSize = 10;
+  setAnimating(true);
+  try {
+    for (let start = 0; start < cardIds.length; start += batchSize) {
+      const flights = [];
+      cardIds.slice(start, start + batchSize).forEach((cardId) => {
+        const el = cardEls.get(cardId);
+        const foundationIndex = locateCard(restoredState, cardId)?.index ?? 0;
+        let toRect = foundationRects.get(foundationIndex);
+        if (!toRect) {
+          toRect = getPlayTargetRect(
+            restoredState,
+            PILE.FOUNDATION,
+            foundationIndex,
+            cardId,
+          );
+          foundationRects.set(foundationIndex, toRect);
+        }
+        if (!el || !toRect) {
+          return;
+        }
+        flights.push({
+          cardEl: el,
+          foundationIndex,
+          fromRect: el.getBoundingClientRect(),
+          toRect,
+        });
+      });
 
-  await flyManyOnLayer(flights);
+      await flyManyOnLayer(flights, {
+        stagger: 0.012,
+        manageAnimating: false,
+        retain: true,
+      });
+
+      flights.forEach(({ cardEl, foundationIndex }) => {
+        const previous = retainedByFoundation.get(foundationIndex);
+        if (previous && previous !== cardEl) {
+          previous.remove();
+          gsap.set(previous, { clearProps: 'all' });
+        }
+        retainedByFoundation.set(foundationIndex, cardEl);
+      });
+    }
+  } finally {
+    setAnimating(false);
+  }
 }

@@ -8,92 +8,150 @@ export function attachDragHandlers({
   getDropTargets,
   getCardElements,
 }) {
-  const draggables = [];
-
-  getCardElements().forEach((el) => {
-    const cardId = el.dataset.cardId;
-    const source = locateCard(gameState, cardId);
-    if (!source) {
-      return;
-    }
-
-    const groupEls = getTableauGroupElements(el, source);
-    const startPositions = new Map();
-    let dragged = false;
-    let peekEl = null;
-
-    const draggable = Draggable.create(el, {
-      type: 'x,y',
-      inertia: false,
-      zIndexBoost: false,
-      onPress() {
-        dragged = false;
-        groupEls.forEach((node) => {
-          startPositions.set(node, {
-            parent: node.parentElement,
-          });
-        });
-      },
-      onDragStart() {
-        dragged = true;
-        groupEls.forEach((node) => node.classList.add('dragging'));
-        peekEl = revealCardBeneath(gameState, source, startPositions.get(el)?.parent);
-        moveGroupToDragLayer(groupEls);
-      },
-      onDrag() {
-        const dx = this.x;
-        const dy = this.y;
-        groupEls.slice(1).forEach((node) => {
-          gsap.set(node, { x: dx, y: dy });
-        });
-      },
-      onClick() {
-        onCardClick?.(cardId);
-      },
-      onRelease() {
-        if (!dragged) {
-          startPositions.clear();
-          return;
-        }
-
-        const dropTarget = findDropTarget(
-          this.pointerEvent.clientX,
-          this.pointerEvent.clientY,
-          getDropTargets(),
-        );
-
-        const finish = (accepted) => {
-          if (!accepted) {
-            peekEl?.remove();
-            restoreGroup(groupEls, startPositions);
-          } else {
-            peekEl?.remove();
-          }
-          groupEls.forEach((node) => node.classList.remove('dragging'));
-          startPositions.clear();
-          dragged = false;
-        };
-
-        if (!dropTarget) {
-          finish(false);
-          return;
-        }
-
-        Promise.resolve(onDropAttempt({
-          cardId,
-          source,
-          target: parseDropTarget(dropTarget),
-          groupEls,
-        })).then(finish);
-      },
-    })[0];
-
-    draggables.push(draggable);
+  const manager = createDragHandlerManager({
+    getGameState: () => gameState,
+    onDropAttempt,
+    onCardClick,
+    getDropTargets,
+    getCardElements,
   });
+  manager.sync();
+  return manager.destroy;
+}
 
-  return () => {
-    draggables.forEach((d) => d.kill());
+export function createDragHandlerManager({
+  getGameState,
+  onDropAttempt,
+  onCardClick,
+  getDropTargets,
+  getCardElements,
+}) {
+  const entries = new Map();
+
+  const sync = () => {
+    const activeElements = new Set(getCardElements());
+
+    entries.forEach((entry, cardId) => {
+      if (!activeElements.has(entry.el)) {
+        entry.draggable.kill();
+        entries.delete(cardId);
+      }
+    });
+
+    activeElements.forEach((el) => {
+      const cardId = el.dataset.cardId;
+      const current = entries.get(cardId);
+      if (current?.el === el) {
+        return;
+      }
+      current?.draggable.kill();
+      entries.set(cardId, {
+        el,
+        draggable: createDraggable(el, {
+          getGameState,
+          onDropAttempt,
+          onCardClick,
+          getDropTargets,
+        }),
+      });
+    });
   };
+
+  const destroy = () => {
+    entries.forEach(({ draggable }) => draggable.kill());
+    entries.clear();
+  };
+
+  return { sync, destroy };
+}
+
+function createDraggable(el, {
+  getGameState,
+  onDropAttempt,
+  onCardClick,
+  getDropTargets,
+}) {
+  const cardId = el.dataset.cardId;
+  const startPositions = new Map();
+  let source = null;
+  let groupEls = [el];
+  let dragGroup = null;
+  let dragged = false;
+  let peekEl = null;
+
+  return Draggable.create(el, {
+    type: 'x,y',
+    inertia: false,
+    zIndexBoost: false,
+    onPress() {
+      source = locateCard(getGameState(), cardId);
+      groupEls = source ? getTableauGroupElements(el, source) : [el];
+      dragged = false;
+      groupEls.forEach((node) => {
+        startPositions.set(node, {
+          parent: node.parentElement,
+        });
+      });
+    },
+    onDragStart() {
+      if (!source) {
+        return;
+      }
+      dragged = true;
+      groupEls.forEach((node) => node.classList.add('dragging'));
+      peekEl = revealCardBeneath(getGameState(), source, startPositions.get(el)?.parent);
+      dragGroup = moveGroupToDragLayer(groupEls);
+    },
+    onDrag() {
+      if (!dragGroup) {
+        return;
+      }
+      const dx = this.x;
+      const dy = this.y;
+      gsap.set(dragGroup, { x: dx, y: dy });
+      gsap.set(el, { x: 0, y: 0 });
+    },
+    onClick() {
+      onCardClick?.(cardId);
+    },
+    onRelease() {
+      if (!dragged) {
+        startPositions.clear();
+        return;
+      }
+
+      const dropTarget = findDropTarget(
+        this.pointerEvent.clientX,
+        this.pointerEvent.clientY,
+        getDropTargets(),
+      );
+
+      const finish = (accepted) => {
+        peekEl?.remove();
+        if (!accepted) {
+          restoreGroup(groupEls, startPositions, dragGroup);
+        } else {
+          dragGroup?.remove();
+        }
+        groupEls.forEach((node) => node.classList.remove('dragging'));
+        startPositions.clear();
+        dragGroup = null;
+        dragged = false;
+      };
+
+      if (!dropTarget) {
+        finish(false);
+        return;
+      }
+
+      Promise.resolve(onDropAttempt({
+        cardId,
+        source,
+        target: parseDropTarget(dropTarget),
+        groupEls,
+      })).then(finish);
+    },
+  })[0];
 }
 
 export function getTableauGroupElements(el, source) {
@@ -141,21 +199,36 @@ function moveGroupToDragLayer(groupEls) {
   const rect = first.getBoundingClientRect();
   const layerRect = layer.getBoundingClientRect();
 
+  const group = document.createElement('div');
+  group.className = 'drag-group';
+  layer.appendChild(group);
+  gsap.set(group, {
+    position: 'absolute',
+    left: rect.left - layerRect.left,
+    top: rect.top - layerRect.top,
+    width: rect.width,
+    height: rect.height + Math.max(0, groupEls.length - 1) * TABLEAU_OFFSET,
+    x: 0,
+    y: 0,
+    zIndex: 3000,
+  });
+
   groupEls.forEach((node, idx) => {
-    layer.appendChild(node);
+    group.appendChild(node);
     gsap.set(node, {
       position: 'absolute',
-      left: rect.left - layerRect.left,
-      top: rect.top - layerRect.top + idx * TABLEAU_OFFSET,
+      left: 0,
+      top: idx * TABLEAU_OFFSET,
       x: 0,
       y: 0,
-      zIndex: 3000 + idx,
+      zIndex: idx,
     });
   });
   syncTableauColumnHeights();
+  return group;
 }
 
-function restoreGroup(groupEls, startPositions) {
+function restoreGroup(groupEls, startPositions, dragGroup) {
   groupEls.forEach((node) => {
     const original = startPositions.get(node);
     if (!original) {
@@ -168,6 +241,7 @@ function restoreGroup(groupEls, startPositions) {
       node.style.setProperty('--stack-offset', `${Number(node.dataset.cardIndex) * TABLEAU_OFFSET}px`);
     }
   });
+  dragGroup?.remove();
   syncTableauColumnHeights();
 }
 
