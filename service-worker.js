@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solitairexp-v58';
+const CACHE_NAME = 'solitairexp-v61';
 
 const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANK_LABELS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
@@ -29,7 +29,7 @@ const ASSETS = [
   './js/main.js',
   './assets/logo.png',
   './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png',
+  './assets/icons/apple-touch-icon.png',
   './assets/cards/card_back.png',
   './assets/themes/alice/card_back.jpg',
   './assets/themes/alice/selector.jpg',
