@@ -171,7 +171,6 @@ body[data-screen="game"] .screen-game {
   max-width: 420px;
   padding: 28px;
   border-radius: 16px;
-  background: var(--panel);
   text-align: center;
   backdrop-filter: blur(4px);
 }
