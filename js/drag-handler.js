@@ -1,5 +1,10 @@
 import { locateCard, PILE } from './game-state.js';
-import { TABLEAU_OFFSET, createCardElement, syncTableauColumnHeights } from './render.js';
+import {
+  TABLEAU_OFFSET,
+  createCardElement,
+  ensurePileSlot,
+  syncTableauColumnHeights,
+} from './render.js';
 
 export function attachDragHandlers({
   gameState,
@@ -99,8 +104,12 @@ function createDraggable(el, {
       }
       dragged = true;
       groupEls.forEach((node) => node.classList.add('dragging'));
-      peekEl = revealCardBeneath(getGameState(), source, startPositions.get(el)?.parent);
+      const originPile = startPositions.get(el)?.parent;
+      peekEl = revealCardBeneath(getGameState(), source, originPile);
       dragGroup = moveGroupToDragLayer(groupEls);
+      if ((source.pile === PILE.FOUNDATION || source.pile === PILE.WASTE) && originPile) {
+        ensurePileSlot(originPile);
+      }
     },
     onDrag() {
       if (!dragGroup) {

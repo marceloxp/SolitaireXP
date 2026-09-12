@@ -65,6 +65,7 @@ export function syncGameDom(root, state, handlers = {}) {
   }
 
   const waste = root.querySelector('.pile-waste');
+  ensurePileSlot(waste);
   if (state.waste.length) {
     mountCard(waste, state.waste[state.waste.length - 1], {
       pile: PILE.WASTE,
@@ -74,6 +75,7 @@ export function syncGameDom(root, state, handlers = {}) {
   }
 
   root.querySelectorAll('.pile-foundation').forEach((pile, index) => {
+    ensurePileSlot(pile);
     const cards = state.foundations[index];
     if (cards.length) {
       mountCard(pile, cards[cards.length - 1], {
@@ -140,6 +142,7 @@ function createStockWaste(state, handlers) {
   const waste = document.createElement('div');
   waste.className = 'pile pile-waste';
   waste.dataset.pile = PILE.WASTE;
+  ensurePileSlot(waste);
   if (state.waste.length) {
     const top = state.waste[state.waste.length - 1];
     waste.appendChild(createCardElement(top, {
@@ -177,6 +180,7 @@ export function syncWastePileDom(state) {
   if (!waste) {
     return;
   }
+  ensurePileSlot(waste);
   waste.querySelectorAll('.card').forEach((el) => el.remove());
   if (state.waste.length) {
     const top = state.waste[state.waste.length - 1];
@@ -188,11 +192,25 @@ export function syncWastePileDom(state) {
   }
 }
 
+export function ensurePileSlot(pile) {
+  if (!pile?.classList.contains('pile-foundation') && !pile?.classList.contains('pile-waste')) {
+    return;
+  }
+  if (pile.querySelector(':scope > .pile-slot')) {
+    return;
+  }
+  const slot = document.createElement('div');
+  slot.className = 'pile-slot';
+  slot.setAttribute('aria-hidden', 'true');
+  pile.prepend(slot);
+}
+
 export function syncFoundationPileDom(state, foundationIndex) {
   const pile = document.querySelector(`.pile-foundation[data-index="${foundationIndex}"]`);
   if (!pile) {
     return;
   }
+  ensurePileSlot(pile);
   pile.querySelectorAll('.card').forEach((el) => el.remove());
   const cards = state.foundations[foundationIndex];
   if (cards.length) {
@@ -213,6 +231,7 @@ function createFoundations(state) {
     pile.className = 'pile pile-foundation';
     pile.dataset.pile = PILE.FOUNDATION;
     pile.dataset.index = String(i);
+    ensurePileSlot(pile);
     const cards = state.foundations[i];
     if (cards.length) {
       pile.appendChild(createCardElement(cards[cards.length - 1], {
