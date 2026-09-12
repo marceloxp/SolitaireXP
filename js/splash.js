@@ -1,4 +1,4 @@
-import { getActiveTheme } from './themes.js';
+import { preloadGameCardImages } from './card.js';
 
 const MIN_VISIBLE_MS = 1000;
 const FADE_MS = 450;
@@ -22,10 +22,9 @@ export function initSplash() {
     setTimeout(resolve, MIN_VISIBLE_MS);
   });
 
-  const theme = getActiveTheme();
   const waitAssets = Promise.all([
     preloadImage('assets/logo.png'),
-    preloadImage(theme.cardBack),
+    preloadGameCardImages(),
   ]);
 
   return Promise.all([waitMin, waitAssets]).then(() => new Promise((resolve) => {

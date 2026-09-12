@@ -32,7 +32,36 @@ export function cardImagePath(card) {
   if (!card.faceUp) {
     return getActiveTheme().cardBack;
   }
-  return `assets/cards/card_${card.suit}_${rankLabel(card.rank)}.png`;
+  return faceCardImagePath(card.suit, card.rank);
+}
+
+export function faceCardImagePath(suit, rank) {
+  return `assets/cards/card_${suit}_${rankLabel(rank)}.png`;
+}
+
+export function getAllFaceCardImagePaths() {
+  const paths = [];
+  SUITS.forEach((suit) => {
+    for (let rank = 1; rank <= 13; rank += 1) {
+      paths.push(faceCardImagePath(suit, rank));
+    }
+  });
+  return paths;
+}
+
+function preloadImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = src;
+  });
+}
+
+export function preloadGameCardImages() {
+  const urls = new Set(getAllFaceCardImagePaths());
+  urls.add(getActiveTheme().cardBack);
+  return Promise.all([...urls].map(preloadImage));
 }
 
 export function foundationIndexForSuit(suit) {
