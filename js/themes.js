@@ -1,21 +1,23 @@
-const STORAGE_KEY = 'solitairexp-theme';
+const registry = globalThis.SolitaireXPThemeRegistry;
 
-export const THEMES = {
+const STORAGE_KEY = registry?.STORAGE_KEY ?? 'solitairexp-theme';
+const PALETTE = registry?.PALETTE ?? {
   default: {
     id: 'default',
     label: 'Classic',
-    cardBack: 'assets/cards/card_back.png',
     themeColor: '#0f6b3a',
-  },
-  alice: {
-    id: 'alice',
-    label: 'Alice',
-    cardBack: 'assets/themes/alice/card_back.jpg',
-    themeColor: '#9e4570',
+    cardBack: 'assets/cards/card_back.png',
   },
 };
 
+export const THEMES = Object.fromEntries(
+  Object.entries(PALETTE).map(([id, entry]) => [id, { ...entry, id: entry.id ?? id }]),
+);
+
 export function getStoredThemeId() {
+  if (registry?.getStoredThemeId) {
+    return registry.getStoredThemeId();
+  }
   try {
     const id = localStorage.getItem(STORAGE_KEY);
     if (id && THEMES[id]) {
@@ -37,16 +39,19 @@ export function applyTheme(id) {
   const theme = THEMES[id] || THEMES.default;
   activeThemeId = theme.id;
 
-  const root = document.documentElement;
-  if (theme.id === 'default') {
-    root.removeAttribute('data-theme');
+  if (registry?.applyPaletteToDocument) {
+    registry.applyPaletteToDocument(theme.id);
   } else {
-    root.setAttribute('data-theme', theme.id);
-  }
-
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) {
-    meta.setAttribute('content', theme.themeColor);
+    const root = document.documentElement;
+    if (theme.id === 'default') {
+      root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', theme.id);
+    }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', theme.themeColor);
+    }
   }
 
   document.querySelectorAll('.theme-option').forEach((btn) => {

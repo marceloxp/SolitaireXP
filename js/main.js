@@ -32,7 +32,7 @@ import { clearWinAnimation, playWinAnimation, showWinOverlay } from './win-anima
 import { initPwaInstall } from './pwa-install.js';
 import { initPwaUpdate } from './pwa-update.js';
 import { initSplash } from './splash.js';
-import { setTheme } from './themes.js';
+import { applyTheme, getStoredThemeId, setTheme } from './themes.js';
 import {
   animateAutoCompleteMoves,
   animateCardToTarget,
@@ -75,6 +75,37 @@ let dragManager = null;
 let timerId = null;
 let won = false;
 let history = [];
+let isBusy = false;
+
+const BUSY_BUTTON_IDS = [
+  'btn-home',
+  'btn-new-from-game',
+  'btn-auto-complete',
+  'btn-undo',
+];
+
+function setBusy(active) {
+  isBusy = active;
+  BUSY_BUTTON_IDS.forEach((id) => {
+    const button = document.getElementById(id);
+    if (button) {
+      button.disabled = active;
+    }
+  });
+  gameRoot.setAttribute('aria-busy', active ? 'true' : 'false');
+}
+
+async function runExclusive(action, skippedValue) {
+  if (isBusy) {
+    return skippedValue;
+  }
+  setBusy(true);
+  try {
+    return await action();
+  } finally {
+    setBusy(false);
+  }
+}
 
 function updateMenuContinueButton() {
   const continueBtn = document.querySelector('#btn-continue');
@@ -87,6 +118,7 @@ function updateMenuContinueButton() {
 }
 
 function boot() {
+  applyTheme(getStoredThemeId());
   bindMenu();
   removeLegacyBestScore();
   lockOrientation();
@@ -201,6 +233,9 @@ function showScreen(name) {
 }
 
 function goHome() {
+  if (isBusy) {
+    return;
+  }
   stopTimer();
   saveGame(gameState, scoreState);
   showScreen('menu');
@@ -208,6 +243,9 @@ function goHome() {
 }
 
 function startNewGame() {
+  if (isBusy) {
+    return;
+  }
   stopTimer();
   clearWinAnimation();
   won = false;
@@ -283,9 +321,13 @@ function updateUndoButton() {
 }
 
 async function handleUndo() {
-  if (won || !history.length) {
+  if (won || !history.length || isBusy) {
     return;
   }
+  return runExclusive(performUndo);
+}
+
+async function performUndo() {
   const snapshot = history.pop();
   const undoMove = detectUndoMove(gameState, snapshot.gameState);
   const before = captureUndoContext();
@@ -312,9 +354,13 @@ async function handleUndo() {
 }
 
 async function handleStockClick() {
-  if (won) {
+  if (won || isBusy) {
     return;
   }
+  return runExclusive(performStockClick);
+}
+
+async function performStockClick() {
   const snapshot = snapshotState();
 
   if (gameState.stock.length) {
@@ -353,11 +399,14 @@ async function handleStockClick() {
   }
 }
 
-async function handleDropAttempt({ cardId, source, target, groupEls }) {
-  if (won) {
+async function handleDropAttempt(args) {
+  if (won || isBusy) {
     return false;
   }
+  return runExclusive(() => performDropAttempt(args), false);
+}
 
+async function performDropAttempt({ cardId, source, target, groupEls }) {
   const snapshot = snapshotState();
   let result;
 
@@ -398,7 +447,7 @@ async function handleDropAttempt({ cardId, source, target, groupEls }) {
   }
 
   await refresh();
-  checkWin();
+  await checkWin();
   return true;
 }
 
@@ -457,13 +506,17 @@ async function finishClickMove({
   }
 
   await refresh();
-  checkWin();
+  await checkWin();
 }
 
 async function handleCardClick(cardId) {
-  if (won) {
+  if (won || isBusy) {
     return;
   }
+  return runExclusive(() => performCardClick(cardId));
+}
+
+async function performCardClick(cardId) {
   const source = locateCard(gameState, cardId);
   const fromPile = source?.pile;
   const snapshot = snapshotState();
@@ -518,10 +571,13 @@ function updateAutoCompleteButton() {
 }
 
 async function runAutoComplete() {
-  if (won || !canAutoComplete(gameState)) {
+  if (won || isBusy || !canAutoComplete(gameState)) {
     return;
   }
+  return runExclusive(performAutoComplete);
+}
 
+async function performAutoComplete() {
   const moves = getAutoCompleteMoves(gameState);
   if (!moves.length) {
     return;
@@ -540,7 +596,7 @@ async function runAutoComplete() {
   syncTableauColumnHeights();
   await animateAutoCompleteMoves(gameState, cardIds);
   await refresh();
-  checkWin();
+  await checkWin();
 }
 
 async function checkWin() {

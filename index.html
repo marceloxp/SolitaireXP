@@ -31,43 +31,16 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" type="image/png">
   <link rel="stylesheet" href="css/style.css?v=1.0.11">
   <link rel="stylesheet" href="css/cards.css?v=1.0.11">
-  <style>
-    /* Critical: show splash before external CSS loads */
-    #splash {
-      position: fixed;
-      inset: 0;
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #0a4f2a;
-    }
-
-    html[data-theme="alice"] #splash {
-      background-color: #6b2d4d;
-    }
-
-    body.is-booting {
-      overflow: hidden;
-    }
-  </style>
+  <script src="js/theme-palette.js"></script>
   <script>
     (function () {
       try {
-        var THEME_COLORS = { default: '#0f6b3a', alice: '#9e4570' };
-        var theme = localStorage.getItem('solitairexp-theme') || 'default';
-        if (!THEME_COLORS[theme]) {
-          theme = 'default';
-        }
-        if (theme !== 'default') {
-          document.documentElement.setAttribute('data-theme', theme);
-        }
-        var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) {
-          meta.setAttribute('content', THEME_COLORS[theme]);
+        var reg = window.SolitaireXPThemeRegistry;
+        if (reg) {
+          reg.applyPaletteToDocument(reg.getStoredThemeId());
         }
 
         var raw = localStorage.getItem('solitairexp-game-state');
@@ -83,6 +56,22 @@
       }
     })();
   </script>
+  <style>
+    /* Critical: show splash before external CSS loads */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--felt-dark);
+    }
+
+    body.is-booting {
+      overflow: hidden;
+    }
+  </style>
 </head>
 <body data-screen="menu" class="is-booting">
   <div id="splash" role="status" aria-live="polite" aria-label="Loading SolitaireXP">

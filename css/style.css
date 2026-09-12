@@ -1,4 +1,5 @@
 :root {
+  /* Fallbacks match js/theme-palette.js (PALETTE.default). Runtime theme sets --felt* on <html>. */
   --felt: #0f6b3a;
   --felt-dark: #0a4f2a;
   --felt-light: #159652;
@@ -829,11 +830,11 @@ html.has-saved-game #btn-continue {
 }
 
 .theme-option.is-active[data-theme-id="default"] {
-  border-color: #159652;
+  border-color: var(--classic-felt-light);
 }
 
 .theme-option.is-active[data-theme-id="alice"] {
-  border-color: #c45a88;
+  border-color: var(--alice-felt-light);
 }
 
 .theme-swatch {
@@ -849,15 +850,9 @@ html.has-saved-game #btn-continue {
   background-image:
     repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.08) 0, rgba(255, 255, 255, 0.08) 1px, transparent 1px, transparent 4px),
     repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.06) 0, rgba(0, 0, 0, 0.06) 1px, transparent 1px, transparent 4px),
-    radial-gradient(circle at top, #159652 0%, #0f6b3a 45%, #0a4f2a 100%);
+    radial-gradient(circle at top, var(--classic-felt-light) 0%, var(--classic-felt) 45%, var(--classic-felt-dark) 100%);
 }
 
 .theme-swatch--alice {
   background-image: url('../assets/themes/alice/selector.jpg');
-}
-
-html[data-theme="alice"] {
-  --felt: #9e4570;
-  --felt-dark: #6b2d4d;
-  --felt-light: #c45a88;
 }
