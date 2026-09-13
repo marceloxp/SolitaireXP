@@ -1,5 +1,7 @@
 # SolitaireXP
 
+![SolitaireXP banner](banner.min.png)
+
 Classic **Klondike solitaire** (Draw-1) in the browser — Windows 3.1 vibes, modern polish. No install required, no account, no ads.
 
 **[Play now →](https://marceloxp.github.io/SolitaireXP/)**
